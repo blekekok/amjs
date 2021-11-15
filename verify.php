@@ -3,8 +3,8 @@
     include 'src/php/database.php';
     include 'src/php/authentication.php';
 
-    $username = $_REQUEST['user'];
-    $token = $_REQUEST['token'];
+    $username = $_GET['user'];
+    $token = $_GET['token'];
 
     // If params doesn't exist
     if (!$username || !$token) {

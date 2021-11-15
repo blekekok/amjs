@@ -7,8 +7,8 @@
     <link rel="stylesheet" href="src/style/styles.css">
     <link rel="stylesheet" href="src/style/auth-form.css">
     <script src="src/script/jquery.js"></script>
-    <script src="src/script/login.js"></script>
-    <title>Metaforums - Log In</title>
+    <script src="src/script/resetpassword.js"></script>
+    <title>Metaforums - Reset Password</title>
 </head>
 <body>
     <header>
@@ -26,11 +26,11 @@
     <div class="content">
         <form action="<?php $_PHP_SELF ?>" method="post" onsubmit="return validate()">
             <div>
-                <input type="text" id="user" name="user" placeholder="Username or E-Mail" value="">
-                <img src="src/res/user.svg" alt="">
+                <input type="password" id="password" name="password" placeholder="Password" value="">
+                <img src="src/res/lock.svg" alt="">
             </div>
             <div>
-                <input type="password" id="password" name="password" placeholder="Password" value="">
+                <input type="password" id="confirm-password" name="confirm-password" placeholder="Confirm Password" value="">
                 <img src="src/res/lock.svg" alt="">
             </div>
             <label id="error-message">error!</label>

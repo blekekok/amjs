@@ -3,19 +3,21 @@ function validate() {
     let email = $("#email").val();
     let username = $("#username").val();
     let password = $("#password").val();
-    let confirm_password = $("#confirm_password").val();
+    let confirm_password = $("#confirm-password").val();
 
     let emailRegex = /[a-zA-Z]+@[a-zA-Z]+\.[a-zA-Z]+/;
     let usernameRegex = /^[a-zA-Z0-9]*$/;
 
     if (!emailRegex.test(email)) 
         return sendError("Invalid e-mail format");
-        
+    if (getEmail(email))
+        return sendError("Email address is already used.");
+
     if (!usernameRegex.test(username))
         return sendError("Username must only contain alphanumeric characters");
     if (username.length < 6 || username.length > 20) 
         return sendError("Username must be between 6 and 20 characters long");
-    if (getData(username))
+    if (getUsername(username))
         return sendError("Username is already taken");
 
     if (password.length < 8)
@@ -33,16 +35,16 @@ function sendError(content) {
     return false;
 }
 
-function getData(username="") {
-    
+function getUsername(username) {
     let responseData;
 
-    $.ajax({
-        url: 'register.php',
+    $.post({
+        url: 'login.php',
         dataType: 'json',
         async: false,
         data: {
-            user_exist: username
+            action: 'username_exist',
+            username: username
         },
         success: (result) => {
             responseData = result;
@@ -50,5 +52,23 @@ function getData(username="") {
     });
 
     return responseData.response;
+}
 
+function getEmail(email) {
+    let responseData;
+
+    $.post({
+        url: 'login.php',
+        dataType: 'json',
+        async: false,
+        data: {
+            action: 'email_exist',
+            email: email
+        },
+        success: (result) => {
+            responseData = result;
+        }
+    });
+
+    return responseData.response;
 }

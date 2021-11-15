@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="src/style/styles.css">
-    <link rel="stylesheet" href="src/style/register.css">
+    <link rel="stylesheet" href="src/style/auth-form.css">
     <script src="src/script/jquery.js"></script>
     <script src="src/script/register.js"></script>
     <title>Metaforums - Sign Up</title>
@@ -38,7 +38,7 @@
                 <img src="src/res/lock.svg" alt="">
             </div>
             <div>
-                <input type="password" id="confirm_password" name="confirm_password" placeholder="Confirm Password" value="">
+                <input type="password" id="confirm-password" name="confirm-password" placeholder="Confirm Password" value="">
                 <img src="src/res/lock.svg" alt="">
             </div>
             <label id="error-message">error!</label>

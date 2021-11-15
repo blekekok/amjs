@@ -54,9 +54,16 @@ form > input[type=submit]:hover {
     filter: brightness(90%);
 }
 
-#error-message {
+#success-message, #error-message {
     display: none;
     padding: 0 18px;
     font-size: 0.8rem;
+}
+
+#success-message {
+    color: rgb(29, 179, 9);
+}
+
+#error-message {
     color: red;
 }

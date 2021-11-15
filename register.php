@@ -1,7 +1,7 @@
 <?php
 
-    include 'src/php/authentication.php';
     include 'src/php/database.php';
+    include 'src/php/authentication.php';
 
     if (isset($_SESSION['session_active'])) {
         header('Location: index.php');
@@ -29,10 +29,26 @@
         
     }
 
-    // Upon requestion user existance
-    if ($username = $_REQUEST['user_exist']) {
-        echo UserExist($conn, $username);
-        return;
+    $action_type = $_POST['action'];
+
+    switch ($action_type) {
+        case 'username_exist':
+            // Upon requesting user existance
+            $username = $_POST['username'];
+            if ($username) {
+                echo UserExist($conn, $username);
+                return;
+            }
+            break;
+
+        case 'email_exist':
+            // Upon requesting user existance
+            $email = $_POST['email'];
+            if ($email) {
+                echo EmailExist($conn, $email);
+                return;
+            }
+            break;
     }
 
     include 'src/php/register-form.php';

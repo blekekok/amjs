@@ -1,26 +1,23 @@
 function validate() {
 
-    let email = $("#email").val();
-    let username = $("#username").val();
+    let user = $("#user").val();
     let password = $("#password").val();
 
     let emailRegex = /[a-zA-Z]+@[a-zA-Z]+\.[a-zA-Z]+/;
-    let usernameRegex = /^[a-zA-Z0-9]*$/;
 
-    if (!emailRegex.test(email)) 
-        return sendError("Invalid e-mail format");
-        
-    if (!usernameRegex.test(username))
-        return sendError("Username must only contain alphanumeric characters");
-    if (username.length < 6 || username.length > 20) 
-        return sendError("Username must be between 6 and 20 characters long");
-    if (getData(username))
-        return sendError("Username is already taken");
+    if (emailRegex.test(user)) {
+        if (!getEmail(user)) 
+            return sendError('E-mail is not associated with an account.');
+    } else {
+        if (!getUsername(user))
+            return sendError('Username does not exist.');
+    }
 
-    if (password.length < 8)
-        return sendError("Password must be at least 8 characters long");
-    if (password !== confirm_password)
-        return sendError("Please correctly confirm the password");
+    $('login-button').prop('disabled', true);
+    if (!getAccountAuth(user, password)) {
+        $('login-button').prop('disabled', false);
+        return sendError('Invalid password');
+    }
     
     return true;
 
@@ -32,16 +29,16 @@ function sendError(content) {
     return false;
 }
 
-function getData(username="") {
-    
+function getUsername(username) {
     let responseData;
 
-    $.ajax({
-        url: 'register.php',
+    $.post({
+        url: 'login.php',
         dataType: 'json',
         async: false,
         data: {
-            user_exist: username
+            action: 'username_exist',
+            username: username
         },
         success: (result) => {
             responseData = result;
@@ -49,5 +46,43 @@ function getData(username="") {
     });
 
     return responseData.response;
+}
 
+function getEmail(email) {
+    let responseData;
+
+    $.post({
+        url: 'login.php',
+        dataType: 'json',
+        async: false,
+        data: {
+            action: 'email_exist',
+            email: email
+        },
+        success: (result) => {
+            responseData = result;
+        }
+    });
+
+    return responseData.response;
+}
+
+function getAccountAuth(user, pass) {
+    let responseData;
+
+    $.post({
+        url: 'login.php',
+        dataType: 'json',
+        async: false,
+        data: {
+            action: 'acc_auth',
+            user: user,
+            pass: pass
+        },
+        success: (result) => {
+            responseData = result;
+        }
+    });
+
+    return responseData.response;
 }
