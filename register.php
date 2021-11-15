@@ -1,47 +1,37 @@
 <?php
 
+    include 'src/php/authentication.php';
     include 'src/php/database.php';
 
-    if (!empty($_POST)) {
+    if (isset($_SESSION['session_active'])) {
+        header('Location: index.php');
+        die();
+    }
 
-        $email = $_POST["email"];
-        $username = $_POST["username"];
-        $password = $_POST["password"];
+    // Upon clicking register button
+    if (isset($_POST['register-button'])) {
 
-        if ($email && $username && $password) {
-            echo $email;
-            echo $username;
-            echo $password;
-            // PUT IN AUTH CODE HERE
-            // PUT IN AUTH CODE HERE
-            // PUT IN AUTH CODE HERE
-            // PUT IN AUTH CODE HERE
-            // PUT IN AUTH CODE HERE
-            // PUT IN AUTH CODE HERE
+        $username = $_POST['username'];
+        $email = $_POST['email'];
+        $password = $_POST['password'];
+
+        if ($username && $email && $password) {
+            if (CreateNewUser($conn, $username, $email, $password)) {
+                header('Location: login.php');
+                die();
+            } else {
+                header('Content-Type: application/json');
+                echo json_encode(array('error' => 'Unable to create account'));
+            }
         } 
-        
+
         return;
         
     }
 
-    if ($username = $_REQUEST["user_exist"]) {
-
-        // SQL Injection Prevention
-        $query = $conn->prepare('SELECT username FROM users WHERE username LIKE ?');
-        $query-> bind_param('s', $username);
-        $query->execute();
-
-        $result = $query->get_result();
-
-        header("Content-Type: application/json");
-
-        if (!$result) {
-            echo json_encode(array('error' => 'An unknown error occured'));
-            return;
-        }
-
-        echo json_encode(array('response' => boolval($result->num_rows)));
-
+    // Upon requestion user existance
+    if ($username = $_REQUEST['user_exist']) {
+        echo UserExist($conn, $username);
         return;
     }
 

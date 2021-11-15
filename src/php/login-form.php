@@ -13,7 +13,7 @@
 <body>
     <header>
         <div class="header-left">
-            <a href="login.php">LOG IN</a>
+            <a href="register.php">SIGN UP</a>
         </div>
         <a class="logo" href="index.php">
             <img src="src/res/logo.png" alt="">
@@ -26,19 +26,11 @@
     <div class="content">
         <form action="<?php $_PHP_SELF ?>" method="post" onsubmit="return validate()">
             <div>
-                <input type="email" id="email" name="email" placeholder="E-mail" value="">
-                <img src="src/res/mail.svg" alt="">
-            </div>
-            <div>
                 <input type="text" id="username" name="username" placeholder="Username" value="">
                 <img src="src/res/user.svg" alt="">
             </div>
             <div>
                 <input type="password" id="password" name="password" placeholder="Password" value="">
-                <img src="src/res/lock.svg" alt="">
-            </div>
-            <div>
-                <input type="password" id="confirm_password" name="confirm_password" placeholder="Confirm Password" value="">
                 <img src="src/res/lock.svg" alt="">
             </div>
             <label id="error-message">error!</label>

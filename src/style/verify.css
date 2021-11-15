@@ -1,0 +1,32 @@
+@import "styles.css";
+
+body {
+    display: flex;
+    justify-content: center;
+}
+
+.content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 500px;
+    padding-bottom: 20px;
+    margin: 16px;
+    background-color: rgb(250, 250, 250);
+    border: solid 2px #cfcfcf;
+    border-radius: 15px;
+}
+
+.mail-icon {
+    margin: 0;
+    height: 240px;
+}
+
+h1 {
+    font-size: 26px;
+    color: #2e2e2e;
+}
+
+.logo > img {
+    height: 36px;
+}
