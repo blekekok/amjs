@@ -31,6 +31,10 @@
             </div>
             <label id="success-message">error!</label>
             <input type="submit" name="request-resetpassword-button" id="request-resetpassword-button" value="SEND PASSWORD RESET LINK">
+            <div class="sub-link">
+                <img src="src/res/left-arrow.svg" alt="">
+                <a href="login.php">Back to Login</a>
+            </div>
         </form>
     </div>
 

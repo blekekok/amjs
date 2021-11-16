@@ -24,7 +24,7 @@
     </header>
 
     <div class="content">
-        <form action="<?php $_PHP_SELF ?>" method="post" onsubmit="return validate()">
+        <form action="<?php $_PHP_SELF ?>" method="post" onsubmit="return resetPassword()">
             <div>
                 <input type="password" id="password" name="password" placeholder="Password" value="">
                 <img src="src/res/lock.svg" alt="">
@@ -34,7 +34,7 @@
                 <img src="src/res/lock.svg" alt="">
             </div>
             <label id="error-message">error!</label>
-            <input type="submit" name="login-button" id="login-button" value="LOG IN">
+            <input type="submit" name="changepassword-button" id="changepassword-button" value="CHANGE PASSWORD">
         </form>
     </div>
 

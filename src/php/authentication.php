@@ -63,15 +63,11 @@
         return json_encode(array('response' => boolval(password_verify($pass, $data['password_hash']))));
     }
 
-    function CreateNewUser($conn, $username, $email, $password) {
+    function CreateNewUser($conn, $username, $email, $pass) {
 
         $query = $conn->prepare('INSERT INTO users (username, email, password_hash, verification_token, verification_timestamp) VALUES (?,?,?,?,CURRENT_TIMESTAMP);');
 
-        // Password Hashing with BCrypt
-        $options = [
-            'cost' => 8 //Change this, a higher number takes longer to encrypt
-        ];
-        $hash = password_hash($password, PASSWORD_BCRYPT, $options);
+        $hash = getPasswordHash($pass);
         
         // Verification Token
         $verification_token = bin2hex(openssl_random_pseudo_bytes(32));
@@ -107,7 +103,7 @@
 
     }
 
-    function ResetPassword($conn, $email, $token, $check) {
+    function CheckResetPasswordToken($conn, $email, $token) {
 
         $configs = include('src/php/config.php');
 
@@ -119,11 +115,18 @@
         
         if (!$result || $result->num_rows < 1) return false;
         
-        // Only checks if resetpassword_token exist and valid
-        if ($check) return true;
+        return true;
+    }
 
-        $query = $conn->prepare('UPDATE users SET resetpassword_token=NULL,resetpassword_timestamp=NULL WHERE username LIKE ? AND resetpassword_token LIKE ?;');
-        $query->bind_param('ss', $email, $token);
+    function ChangeUserPassword($conn, $email, $pass, $token) {
+
+        if (!CheckResetPasswordToken($conn, $email, $token)) return false;
+
+        $query = $conn->prepare('UPDATE users SET password_hash=?,resetpassword_token=NULL,resetpassword_timestamp=NULL WHERE email LIKE ? AND resetpassword_token LIKE ?;');
+
+        $hash = getPasswordHash($pass);
+
+        $query->bind_param('sss', $hash, $email, $token);
 
         if (!$query->execute()) return false;
 
@@ -197,6 +200,18 @@
         // Send Email
         $subject = "Verify your account";
         mail($email, $subject, $message, $headers);
+    }
+ 
+    function getPasswordHash($password) {
+     
+        $configs = include('src/php/config.php');
+
+        // Password Hashing with BCrypt
+        $options = [
+            'cost' => $configs['PASSWORD_HASH_COST']
+        ];
+        return password_hash($password, PASSWORD_BCRYPT, $options);
+
     }
 
 ?>

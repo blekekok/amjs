@@ -11,9 +11,29 @@ function requestPasswordReset() {
 
 }
 
+function resetPassword() {
+
+    let password = $("#password").val();
+    let confirm_password = $("#confirm-password").val();
+
+    if (password.length < 8)
+        return sendError("Password must be at least 8 characters long");
+    if (password !== confirm_password)
+        return sendError("Please correctly confirm the password");
+
+    return true;
+
+}
+
 function sendSuccess(content) {
     $("#success-message").html(content);
     $("#success-message").show();
+    return false;
+}
+
+function sendError(content) {
+    $("#error-message").html(content);
+    $("#error-message").show();
     return false;
 }
 
@@ -25,7 +45,7 @@ function requestResetPassword(email) {
         dataType: 'json',
         async: false,
         data: {
-            action: 'reset',
+            action: 'request',
             email: email
         },
         success: (result) => {

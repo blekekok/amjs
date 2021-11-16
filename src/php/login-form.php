@@ -35,6 +35,9 @@
             </div>
             <label id="error-message">error!</label>
             <input type="submit" name="login-button" id="login-button" value="LOG IN">
+            <div class="sub-link">
+                <a href="resetpassword.php">Forgot your password?</a>
+            </div>
         </form>
     </div>
 

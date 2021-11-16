@@ -67,3 +67,20 @@ form > input[type=submit]:hover {
 #error-message {
     color: red;
 }
+
+form > .sub-link {
+    display: flex;
+    justify-content: center;
+    border: none;
+}
+
+form > .sub-link > a {
+    text-decoration: none;
+    color: #6d6d6d;
+    font-size: 16px;
+}
+
+form > .sub-link > img {
+    margin: 0 4px;
+    height: 20px;
+}
