@@ -1,17 +1,17 @@
 @import "styles.css";
 
-.top-seperator {
+.seperator {
     position: relative;
     height: 40px;
     display: flex;
     align-items: center;
 }
 
-.top-seperator > h1 {
+.seperator > h1 {
     font-size: 24px;
 }
 
-.top-seperator > .create-thread-button {
+.seperator > .create-thread-button {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -22,24 +22,31 @@
     transition: all 75ms ease-in-out;
 }
 
-.top-seperator > .create-thread-button:hover {
+.seperator > .create-thread-button:hover {
     cursor: pointer;
     filter: brightness(90%);
 }
 
-.top-seperator > .create-thread-button:active {
+.seperator > .create-thread-button:active {
     filter: brightness(80%);
 }
 
-.top-seperator > .create-thread-button > img {
+.seperator > .create-thread-button > img {
     margin-right: 6px;
+}
+
+.active-user {
+    margin-top: 0;
+    color: var(--gray);
+    font-weight: 400;
+    font-size: 18px;
 }
 
 .line {
     flex-grow: 1;
     height: 1px;
     margin: 0 10px;
-    background-color: var(--dark-gray);
+    background-color: var(--gray);
 }
 
 .thread-browser {
@@ -82,6 +89,15 @@
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
+}
+
+.thread-browser > .thread > li > .title:hover {
+    cursor: pointer;
+    filter: brightness(75%);
+}
+
+.thread-browser > .thread > li > .title:active {
+    filter:brightness(50%);
 }
 
 .thread-browser > .thread > li > .meta {

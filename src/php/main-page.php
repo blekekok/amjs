@@ -1,12 +1,5 @@
 <?php 
 
-    include 'src/php/database.php';
-    include 'src/php/authentication.php';
-
-    $_GET['test']  = 'hello';
-
-    session_start();
-
 ?>
 
 <!DOCTYPE html>
@@ -21,7 +14,7 @@
 </head>
 <body>
     <?php include 'src/php/page-header.php' ?>
-    <div class="top-seperator">
+    <div class="seperator">
         <h1>Forum Groups</h1>
         <div class="line"></div>
         <?php 
@@ -78,10 +71,18 @@
                         <img src="src/res/comment.svg" alt="">
                         <span>999</span>
                     </div>
-                    <span class="time">Moments ago</span>
+                    <span class="time">1 hour ago</span>
                 </div>
             </li>
         </ul>
+    </div>
+        
+    <div class="bottom-seperator">
+        <div class="seperator">
+            <h1>Site</h1>
+            <div class="line"></div>
+        </div>
+        <h2 class="active-user">Currently Active Users: <?php echo getActiveUser($conn, 'hello'); ?></h2>
     </div>
 </body>
 </html>

@@ -64,7 +64,7 @@
 
     function CreateNewUser($conn, $username, $email, $pass) {
 
-        $query = $conn->prepare('INSERT INTO users (username, email, password_hash, verification_token, verification_timestamp) VALUES (?,?,?,?,CURRENT_TIMESTAMP);');
+        $query = $conn->prepare('INSERT INTO users (username, email, password_hash, verification_token, verification_timestamp, creation_date) VALUES (?,?,?,?,CURRENT_TIMESTAMP,CURRENT_TIMESTAMP);');
 
         $hash = getPasswordHash($pass);
         
