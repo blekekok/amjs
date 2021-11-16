@@ -1,0 +1,167 @@
+@import "styles.css";
+
+.top-seperator {
+    position: relative;
+    height: 40px;
+    display: flex;
+    align-items: center;
+}
+
+.top-seperator > h1 {
+    font-size: 24px;
+}
+
+.top-seperator > .create-thread-button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 8px 24px;
+    border: solid 1px var(--dark-gray);
+    background-color: white;
+    font-size: 16px;
+    transition: all 75ms ease-in-out;
+}
+
+.top-seperator > .create-thread-button:hover {
+    cursor: pointer;
+    filter: brightness(90%);
+}
+
+.top-seperator > .create-thread-button:active {
+    filter: brightness(80%);
+}
+
+.top-seperator > .create-thread-button > img {
+    margin-right: 6px;
+}
+
+.line {
+    flex-grow: 1;
+    height: 1px;
+    margin: 0 10px;
+    background-color: var(--dark-gray);
+}
+
+.thread-browser {
+    user-select: none;
+    display: flex;
+    margin-top: 10px;
+    height: 400px;
+}
+
+.thread-browser > .group {
+    min-width: 150px;
+}
+
+.thread-browser > .category  {
+    min-width: 225px;
+}
+
+.thread-browser > .thread {
+    flex-grow: 1;
+}
+
+.thread-browser > .thread > li {
+    padding: 0;
+    height: 45px !important;
+    border: none;
+    border-top: solid 1px var(--medium-light-gray);
+}
+
+.thread-browser > .thread  > li > .badge {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-width: 65px;
+    color: var(--gray);
+    font-size: 16px;
+}
+
+.thread-browser > .thread > li > .title {
+    color: var(--accent-blue);
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.thread-browser > .thread > li > .meta {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-left: auto;
+}
+
+.thread-browser > .thread > li > .meta div {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.thread-browser > .thread > li > .meta img {
+    height: 18px;
+}
+
+.thread-browser > .thread > li > .meta > .sub-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 200px;
+    margin-right: 4px;
+}
+
+.thread-browser > .thread > li > .meta > .posts {
+    width: 50px;
+}
+
+.thread-browser > .thread > li > .meta > .time {
+    width: 125px;
+}
+
+.thread-browser > .thread > li:nth-of-type(2n + 1) {
+    background-color: #f5eaea;
+}
+
+.thread-browser > ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    overflow: scroll;
+    scrollbar-width: none;
+}
+
+.thread-browser > ul > li {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    margin: 0;
+    padding-left: 10px;
+    min-width: 0;
+}
+
+.thread-browser > li::-webkit-scrollbar {
+    display: none;
+}
+
+.thread-browser > .list > li {
+    height: 35px;
+    color: var(--light-gray);
+    border-right: solid 1px var(--medium-light-gray);
+    transition: all 75ms ease-in-out;
+}
+
+.thread-browser > .list > li > span {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.thread-browser > .list > li:hover {
+    cursor: pointer;
+    color: var(--dark-gray);
+    border-right-color: var(--dark-gray);
+}
+
+.thread-browser > .list > li.active {
+    color: var(--dark-gray);
+    border-right-color: var(--accent-blue);
+}

@@ -1,5 +1,11 @@
 <?php
 
+    session_start();
+    if (isset($_SESSION['role'])) {
+        header('Location: index.php');
+        die();
+    }
+
     include 'src/php/database.php';
     include 'src/php/authentication.php';
 
@@ -8,7 +14,7 @@
 
         $user = $_POST['user'];
         $password = $_POST['password'];
-
+        
         if ($user && $password) {
             if (AuthenticateUser($conn, $user, $password)) {
                 header('Location: index.php');
@@ -18,7 +24,7 @@
                 echo json_encode(array('error' => 'Unable to authenticate account'));
             }
         } 
-
+        
         return;
         
     }
@@ -29,7 +35,7 @@
         case 'username_exist':
             // Upon requesting user existance
             $username = $_POST['username'];
-            if ($username) {
+            if (isset($username)) {
                 echo UserExist($conn, $username);
                 return;
             }
@@ -38,7 +44,7 @@
         case 'email_exist':
             // Upon requesting user existance
             $email = $_POST['email'];
-            if ($email) {
+            if (isset($email)) {
                 echo EmailExist($conn, $email);
                 return;
             }
@@ -48,8 +54,8 @@
             //Upon requesting user authentication
             $user = $_POST['user'];
             $pass = $_POST['pass'];
-            if ($user && $pass) {
-                echo AccountAuth($conn, $user, $pass);
+            if (isset($user) && isset($pass)) {
+                echo json_encode(array('response' => AccountAuth($conn, $user, $pass)));
                 return;
             }
             break;

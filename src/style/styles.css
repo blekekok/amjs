@@ -3,12 +3,20 @@
 * {
     font-family: 'Roboto', sans-serif;
     --primary-color: #464646;
+    --very-light-gray: #f7f7f7;
+    --medium-light-gray: #cfcfcf;
     --light-gray: #a1a1a1;
+    --gray: #504f4f;
+    --dark-gray: #2B2B2B;
+    --accent-blue: #1e87f0;
+    --dark-blue: #035eb9;
+    --accent-green: #0cc90c;
+    --accent-red: #da1e1e;
 }
 
 body {
     margin: 0;
-    padding: 0 50px;
+    padding: 0 150px;
 }
 
 header {
@@ -23,17 +31,27 @@ header {
 header > div > a {
     text-decoration: none;
     color: var(--primary-color);
+    margin: 0 6px;
+    padding: 6px 10px;
 }
 
 header > div {
     width: 25%;
 }
 
-header > .logo {
-    position: sticky;
-}
-
 header > .logo > img {
     height: 50px;
     display: inherit;
+}
+
+header > .header-left, .header-right {
+    display: flex;
+}
+
+header > .header-start {
+    justify-content: flex-start;
+}
+
+header > .header-right {
+    justify-content: flex-end;
 }

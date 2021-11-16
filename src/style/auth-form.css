@@ -43,7 +43,7 @@ form > input[type=submit] {
     height: 40px;
     width: 100%;
     border: none;
-    background-color: #1e87f0;
+    background-color: var(--accent-blue);
     border-radius: 25px;
     font-size: 0.9rem;
     color: white;
@@ -61,11 +61,11 @@ form > input[type=submit]:hover {
 }
 
 #success-message {
-    color: rgb(29, 179, 9);
+    color: var(--accent-green);
 }
 
 #error-message {
-    color: red;
+    color: var(--accent-red);
 }
 
 form > .sub-link {

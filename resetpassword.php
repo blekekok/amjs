@@ -16,7 +16,14 @@
     $token = $_GET['token'];
 
     // If params doesn't exist, redirect to password reset request
-    if (!$email || !$token) {
+    if (!isset($email) || !isset($token)) {
+
+        session_start();
+        if (isset($_SESSION['role'])) {
+            header('Location: index.php');
+            die();
+        }
+
         include 'src/php/request-resetpassword-form.php';
         return;
     }
@@ -26,7 +33,7 @@
     if (isset($_POST['changepassword-button'])) {
         
         $pass = $_POST['password'];
-        if ($pass && ChangeUserPassword($conn, $email, $pass, $token)) {
+        if (isset($pass) && ChangeUserPassword($conn, $email, $pass, $token)) {
             header('Location: login.php');
             die();
         } else {

@@ -1,1 +1,5 @@
-nothing is here
+<?php
+
+    include 'src/php/main-page.php';
+
+?>

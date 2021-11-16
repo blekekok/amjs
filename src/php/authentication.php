@@ -1,16 +1,5 @@
 <?php
 
-    function CreateSession() {
-
-        if (!$_SESSION['session_key']) {
-
-            $_SESSION['role'] = 'guest';
-
-            return;
-        }
-
-    }
-
     function UserExist($conn, $username) {
         $query = $conn->prepare('SELECT username FROM users WHERE username LIKE ?;');
         $query->bind_param('s', $username);
@@ -18,11 +7,7 @@
 
         $result = $query->get_result();
 
-        header('Content-Type: application/json');
-
-        if (!$result) {
-            return json_encode(array('error' => 'Unable to retrieve user data'));
-        }
+        if (!$result) return json_encode(array('error' => 'Unable to retrieve user data'));
 
         return json_encode(array('response' => boolval($result->num_rows)));
     }
@@ -34,11 +19,7 @@
 
         $result = $query->get_result();
 
-        header('Content-Type: application/json');
-
-        if (!$result) {
-            return json_encode(array('error' => 'Unable to retrieve user data'));
-        }
+        if (!$result) return json_encode(array('error' => 'Unable to retrieve user data'));
 
         return json_encode(array('response' => boolval($result->num_rows)));
     }
@@ -50,17 +31,35 @@
 
         $result = $query->get_result();
 
-        header('Content-Type: application/json');
-
-        if (!$result) {
-            return json_encode(array('error' => 'Unable to retrieve user data'));
-        }
-
-        if ($result->num_rows < 1) return array('response' => false);
+        if (!$result || $result->num_rows < 1) return false;
 
         $data = $result->fetch_assoc();
 
-        return json_encode(array('response' => boolval(password_verify($pass, $data['password_hash']))));
+        return password_verify($pass, $data['password_hash']);
+    }
+ 
+    function AuthenticateUser($conn, $user, $pass) {
+
+        $auth = AccountAuth($conn, $user, $pass);
+
+        if ($auth) {
+            
+            $query = $conn->prepare('SELECT role,username FROM users WHERE username LIKE ? OR email LIKE ?;');
+            $query->bind_param('ss', $user, $user);
+            $query->execute();
+
+            $result = $query->get_result();
+
+            if (!$result || $result->num_rows < 1) return false;
+
+            $data = $result->fetch_assoc();
+
+            $_SESSION['role'] = $data['role'];
+            $_SESSION['username'] = $data['username'];
+
+        }
+
+        return $auth;
     }
 
     function CreateNewUser($conn, $username, $email, $pass) {
@@ -174,11 +173,6 @@
         mail($email, $subject, $message, $headers);
     }
 
-    function AuthenticateUser($conn, $user, $pass) {
-        $auth = AccountAuth($conn, $user, $pass);
-        return $auth;
-    }
-
     function SendVerificationEmail($email, $username, $token) {
 
         $configs = include('src/php/config.php');
@@ -200,6 +194,19 @@
         // Send Email
         $subject = "Verify your account";
         mail($email, $subject, $message, $headers);
+    }
+
+    function isUserVerified($conn, $username) {
+        
+        $query = $conn->prepare('SELECT verified FROM users WHERE username LIKE ? AND verified = 1;');
+        $query->bind_param('s', $username);
+        $query->execute();
+
+        $result = $query->get_result();
+        if (!$result || $result->num_rows < 1) return false;
+
+        return true;
+
     }
  
     function getPasswordHash($password) {

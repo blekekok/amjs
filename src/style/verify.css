@@ -12,8 +12,8 @@ body {
     width: 500px;
     padding-bottom: 20px;
     margin: 16px;
-    background-color: rgb(250, 250, 250);
-    border: solid 2px #cfcfcf;
+    background-color: var(--very-light-gray);
+    border: solid 2px var(--medium-light-gray);
     border-radius: 15px;
 }
 
@@ -24,7 +24,7 @@ body {
 
 h1 {
     font-size: 26px;
-    color: #2e2e2e;
+    color: var(--dark-gray);
 }
 
 .logo > img {

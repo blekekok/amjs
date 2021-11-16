@@ -1,5 +1,11 @@
 <?php
 
+    session_start();
+    if (isset($_SESSION['role'])) {
+        header('Location: index.php');
+        die();
+    }
+
     include 'src/php/database.php';
     include 'src/php/authentication.php';
 
@@ -15,7 +21,7 @@
         $email = $_POST['email'];
         $password = $_POST['password'];
 
-        if ($username && $email && $password) {
+        if (isset($username) && isset($email) && isset($password)) {
             if (CreateNewUser($conn, $username, $email, $password)) {
                 header('Location: login.php');
                 die();
@@ -35,7 +41,7 @@
         case 'username_exist':
             // Upon requesting user existance
             $username = $_POST['username'];
-            if ($username) {
+            if (isset($username)) {
                 echo UserExist($conn, $username);
                 return;
             }
@@ -44,7 +50,7 @@
         case 'email_exist':
             // Upon requesting user existance
             $email = $_POST['email'];
-            if ($email) {
+            if (isset($email)) {
                 echo EmailExist($conn, $email);
                 return;
             }
