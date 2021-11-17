@@ -9,11 +9,6 @@
     include 'src/php/database.php';
     include 'src/php/authentication.php';
 
-    if (isset($_SESSION['session_active'])) {
-        header('Location: index.php');
-        die();
-    }
-
     // Upon clicking register button
     if (isset($_POST['register-button'])) {
 

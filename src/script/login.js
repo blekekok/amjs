@@ -3,7 +3,9 @@ function validate() {
     let user = $("#user").val();
     let password = $("#password").val();
 
-    let emailRegex = /[a-zA-Z]+@[a-zA-Z]+\.[a-zA-Z]+/;
+    let emailRegex = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+
+    user = user.replace(/ /g, "");
 
     if (emailRegex.test(user)) {
         if (!getEmail(user)) 

@@ -5,8 +5,10 @@ function validate() {
     let password = $("#password").val();
     let confirm_password = $("#confirm-password").val();
 
-    let emailRegex = /[a-zA-Z0-9]+@[a-zA-Z0-9]+\.[a-zA-Z]+/;
+    let emailRegex = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
     let usernameRegex = /^[a-zA-Z0-9]*$/;
+
+    email = email.replace(/ /g, "")
 
     if (!emailRegex.test(email)) 
         return sendError("Invalid e-mail format");

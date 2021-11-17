@@ -9,6 +9,7 @@
 
 .seperator > h1 {
     font-size: 24px;
+    color: var(--dark-gray);
 }
 
 .seperator > .create-thread-button {
@@ -46,7 +47,7 @@
     flex-grow: 1;
     height: 1px;
     margin: 0 10px;
-    background-color: var(--gray);
+    background-color: var(--medium-light-gray);
 }
 
 .thread-browser {
@@ -145,6 +146,10 @@
     scrollbar-width: none;
 }
 
+.thread-browser > ul::-webkit-scrollbar {
+    display: none;
+}
+
 .thread-browser > ul > li {
     display: flex;
     justify-content: flex-start;
@@ -152,10 +157,6 @@
     margin: 0;
     padding-left: 10px;
     min-width: 0;
-}
-
-.thread-browser > li::-webkit-scrollbar {
-    display: none;
 }
 
 .thread-browser > .list > li {
@@ -181,4 +182,31 @@
 .thread-browser > .list > li.active {
     color: var(--dark-gray);
     border-right-color: var(--accent-blue);
+}
+
+#thread-header > div {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    margin-top: 4px;
+}
+
+#thread-header > h1 {
+    color: var(--dark-gray);
+    font-size: 36px;
+    margin-bottom: 6px;
+}
+
+#thread-header span {
+    color: var(--light-gray);
+    font-weight: 400;
+    font-size: 16px;
+}
+
+#thread-header img {
+    height: 20px;
+}
+
+#thread-header {
+    margin-bottom: 20px;
 }

@@ -33,23 +33,20 @@
     </div>
 
     <div class="thread-browser">
-        <ul id="group-list" class="list group">
-            
-        </ul>
-        <ul id="category-list" class="list category">
-            
-        </ul>
-        <ul id="thread-list" class="thread">
-            
-        </ul>
+        <ul id="group-list" class="list group"></ul>
+        <ul id="category-list" class="list category"></ul>
+        <ul id="thread-list" class="thread"></ul>
     </div>
         
-    <div class="bottom-seperator">
+    <div id="bottom-seperator">
         <div class="seperator">
             <h1>Site</h1>
             <div class="line"></div>
         </div>
         <h2 class="active-user">Currently Active Users: <?php echo getActiveUser($conn, 'hello'); ?></h2>
+    </div>
+
+    <div id="content">
     </div>
 
     <script src="src/script/main-page.js"></script>

@@ -2,12 +2,14 @@ var currentURL = new URLSearchParams(window.location.search);
 
 if (currentURL.has('thread')) {
     let threadId = currentURL.get('thread')
-    console.log(threadId);
+    
+    setActiveThread(threadId, true);
+} else {
+    setGroups();
 }
 
-setGroups();
 
-function setGroups(active=-1) {
+function setGroups(active=-1, categoryid=-1) {
     let groups = getGroups();
 
     if (groups && groups.length) {
@@ -29,8 +31,12 @@ function setGroups(active=-1) {
             
             groupList.append(listItem);
         });
-
-        setCategories(groups[0].id);
+        
+        if (active == -1) {
+            setCategories(groups[0].id);
+        } else {
+            setCategories(active, categoryid);
+        }
     }
 }
 
@@ -51,17 +57,21 @@ function setCategories(groupid=1, active=-1) {
             listItem.onclick = () => {
                 $('#category-list li').removeClass('active');
                 listItem.classList.add('active');
-                setThreads(category.id);
+                setThreadTitles(category.id);
             }
 
             categoryList.append(listItem);
         });
 
-        setThreads(categories[0].id);
+        if (active == -1) {
+            setThreadTitles(categories[0].id);
+        } else {
+            setThreadTitles(active);
+        }
     }
 }
 
-function setThreads(categoryid=2) {
+function setThreadTitles(categoryid=2) {
     let threads = getThreadTitles(categoryid);
     let threadList = $('#thread-list');
     threadList.empty();
@@ -128,9 +138,35 @@ function setThreads(categoryid=2) {
     }
 }
 
-function setActiveThread(threadid) {
-    let content = getThreadContent(threadid);
-    console.log(content);
+function setActiveThread(threadid, fromLink=false) {
+    let result = getThreadContent(threadid);
+
+    if (result) {
+        if (fromLink) {
+            setGroups(result.groupid, result.categoryid);
+        }
+
+        $('#bottom-seperator h1').html(`Thread in : ${result.displayname}`);
+        $('#bottom-seperator h2').remove();
+
+        $('#content').append(
+            `
+                <div id="thread-header">
+                    <h1>${result.title}</h1>
+                    <span>Posted on October 31st 2019 07:12 PM by ${result.author}</span>
+                    <div>
+                        <img src="src/res/history.svg" alt="">
+                        <span>${formatTimeAsText(result.lastactivity)}.</span>
+                    </div>
+                </div>
+                <div class="seperator">
+                    <div class="line"></div>
+                </div>
+            `
+        );
+
+        console.log(result);
+    }
 }
 
 function getGroups() {
@@ -205,7 +241,22 @@ function getThreadContent(threadid) {
         }
     });
 
-    return responseData;
+    switch (responseData.response) {
+        case 200:
+            history.replaceState('', '', `/index.php?thread=${threadid}`);
+            return responseData.content;
+
+        case 500 && 404:
+            history.replaceState('', '', '/');
+            setGroups();
+            break;
+
+        case 401:
+            window.location.replace('/login.php');
+            break;
+    }
+
+    return null;
 }
 
 function formatTimeAsText(time = 0) {
