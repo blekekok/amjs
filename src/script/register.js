@@ -5,7 +5,7 @@ function validate() {
     let password = $("#password").val();
     let confirm_password = $("#confirm-password").val();
 
-    let emailRegex = /[a-zA-Z]+@[a-zA-Z]+\.[a-zA-Z]+/;
+    let emailRegex = /[a-zA-Z0-9]+@[a-zA-Z0-9]+\.[a-zA-Z]+/;
     let usernameRegex = /^[a-zA-Z0-9]*$/;
 
     if (!emailRegex.test(email)) 

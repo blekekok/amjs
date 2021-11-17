@@ -15,7 +15,7 @@
         $user = $_POST['user'];
         $password = $_POST['password'];
         
-        if ($user && $password) {
+        if (isset($user) && isset($password)) {
             if (AuthenticateUser($conn, $user, $password)) {
                 header('Location: index.php');
                 die();

@@ -10,6 +10,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="src/style/styles.css">
     <link rel="stylesheet" href="src/style/main.css">
+    <script src="src/script/jquery.js"></script>
     <title>Metaforums</title>
 </head>
 <body>
@@ -32,48 +33,14 @@
     </div>
 
     <div class="thread-browser">
-        <ul class="list group">
-            <li><span>GENERAL</span></li>
-            <li><span>WORLD</span></li>
-            <li><span>ART</span></li>
-            <li><span>ENTERTAINMENT</span></li>
-            <li class="active"><span>VIDEO GAMES</span></li>
-            <li><span>POLITICS</span></li>
-            <li><span>OFF-TOPIC</span></li>
+        <ul id="group-list" class="list group">
+            
         </ul>
-        <ul class="list category">
-            <li><span>FIRST-PERSON SHOOTERS</span></li>
-            <li><span>REAL-TEAM STRATEGY</span></li>
-            <li class="active"><span>RPG</span></li>
-            <li><span>MOBAGE</span></li>
-            <li><span>BOARD GAMES</span></li>
-            <li><span>MOBA</span></li>
-            <li><span>HORROR</span></li>
-            <li><span>SURVIVAL</span></li>
-            <li><span>STORY GAMES</span></li>
-            <li><span>ARCADE</span></li>
-            <li><span>HOMEBREW</span></li>
-            <li><span>OTHERS</span></li>
+        <ul id="category-list" class="list category">
+            
         </ul>
-        <ul class="thread">
-            <li>
-                <span class="badge">[HOT]</span>
-                <span class="title">Why you should give Outer Worlds a change (In-depth review)</span>
-                <div class="meta">
-                    <div class="sub-meta">
-                        <span class="author">by Frixs</span>
-                        <div class="views">
-                            <img src="src/res/eye.svg" alt="">
-                            <span>183</span>
-                    </div>
-                    </div>
-                    <div class="posts">
-                        <img src="src/res/comment.svg" alt="">
-                        <span>999</span>
-                    </div>
-                    <span class="time">1 hour ago</span>
-                </div>
-            </li>
+        <ul id="thread-list" class="thread">
+            
         </ul>
     </div>
         
@@ -84,6 +51,8 @@
         </div>
         <h2 class="active-user">Currently Active Users: <?php echo getActiveUser($conn, 'hello'); ?></h2>
     </div>
+
+    <script src="src/script/main-page.js"></script>
 </body>
 </html>
 

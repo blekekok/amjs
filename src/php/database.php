@@ -12,7 +12,7 @@
     
     // Update user activity
     if (isset($_SESSION['role'])) {
-        $query = $conn->prepare('UPDATE users SET lastactivity=CURRENT_TIMESTAMP WHERE username LIKE ?;');
+        $query = $conn->prepare('UPDATE MFUsers SET lastactivity=CURRENT_TIMESTAMP WHERE username LIKE ?;');
         $query->bind_param('s', $_SESSION['username']);
         $query->execute();
     }
@@ -21,7 +21,7 @@
 
         $configs = include('src/php/config.php');
 
-        $query = $conn->prepare('SELECT COUNT(lastactivity) AS totaluser FROM users WHERE timestampdiff(SECOND, lastactivity, NOW()) < ?;');
+        $query = $conn->prepare('SELECT COUNT(lastactivity) AS totaluser FROM MFUsers WHERE timestampdiff(SECOND, lastactivity, NOW()) < ?;');
         $query->bind_param('i', $configs['MAX_ACTIVITY_TIME']);
         $query->execute();
 

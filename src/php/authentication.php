@@ -1,7 +1,7 @@
 <?php
 
     function UserExist($conn, $username) {
-        $query = $conn->prepare('SELECT username FROM users WHERE username LIKE ?;');
+        $query = $conn->prepare('SELECT username FROM MFUsers WHERE username LIKE ?;');
         $query->bind_param('s', $username);
         $query->execute();
 
@@ -13,7 +13,7 @@
     }
 
     function EmailExist($conn, $email) {
-        $query = $conn->prepare('SELECT username FROM users WHERE email LIKE ?;');
+        $query = $conn->prepare('SELECT username FROM MFUsers WHERE email LIKE ?;');
         $query->bind_param('s', $email);
         $query->execute();
 
@@ -25,7 +25,7 @@
     }
 
     function AccountAuth($conn, $user, $pass) {
-        $query = $conn->prepare('SELECT password_hash FROM users WHERE username LIKE ? OR email LIKE ?;');
+        $query = $conn->prepare('SELECT password_hash FROM MFUsers WHERE username LIKE ? OR email LIKE ?;');
         $query->bind_param('ss', $user, $user);
         $query->execute();
 
@@ -44,7 +44,7 @@
 
         if ($auth) {
             
-            $query = $conn->prepare('SELECT role,username FROM users WHERE username LIKE ? OR email LIKE ?;');
+            $query = $conn->prepare('SELECT role,username FROM MFUsers WHERE username LIKE ? OR email LIKE ?;');
             $query->bind_param('ss', $user, $user);
             $query->execute();
 
@@ -64,7 +64,7 @@
 
     function CreateNewUser($conn, $username, $email, $pass) {
 
-        $query = $conn->prepare('INSERT INTO users (username, email, password_hash, verification_token, verification_timestamp, creation_date) VALUES (?,?,?,?,CURRENT_TIMESTAMP,CURRENT_TIMESTAMP);');
+        $query = $conn->prepare('INSERT INTO MFUsers (username, email, password_hash, verification_token, verification_timestamp, creation_date) VALUES (?,?,?,?,CURRENT_TIMESTAMP,CURRENT_TIMESTAMP);');
 
         $hash = getPasswordHash($pass);
         
@@ -85,7 +85,7 @@
         
         $configs = include('src/php/config.php');
 
-        $query = $conn->prepare('SELECT username FROM users WHERE username LIKE ? AND verification_token LIKE ?  AND verified != 1 AND TIMESTAMPDIFF(SECOND, verification_timestamp, NOW()) < ?;');
+        $query = $conn->prepare('SELECT username FROM MFUsers WHERE username LIKE ? AND verification_token LIKE ?  AND verified != 1 AND TIMESTAMPDIFF(SECOND, verification_timestamp, NOW()) < ?;');
         $query->bind_param('ssi', $username, $token, $configs['VERIFY_TOKEN_TIMEOUT']);
         $query->execute();
 
@@ -93,7 +93,7 @@
 
         if (!$result || $result->num_rows < 1) return false;
 
-        $query = $conn->prepare('UPDATE users SET verified=1,verification_token=NULL,verification_timestamp=NULL WHERE username LIKE ? AND verification_token LIKE ?;');
+        $query = $conn->prepare('UPDATE MFUsers SET verified=1,verification_token=NULL,verification_timestamp=NULL WHERE username LIKE ? AND verification_token LIKE ?;');
         $query->bind_param('ss', $username, $token);
 
         if (!$query->execute()) return false;
@@ -106,7 +106,7 @@
 
         $configs = include('src/php/config.php');
 
-        $query = $conn->prepare('SELECT email FROM users WHERE email LIKE ? AND resetpassword_token LIKE ? AND TIMESTAMPDIFF(SECOND, resetpassword_timestamp, NOW()) < ?;');
+        $query = $conn->prepare('SELECT email FROM MFUsers WHERE email LIKE ? AND resetpassword_token LIKE ? AND TIMESTAMPDIFF(SECOND, resetpassword_timestamp, NOW()) < ?;');
         $query->bind_param('ssi', $email, $token, $configs['RESETPASSWORD_TOKEN_TIMEOUT']);
         $query->execute();
 
@@ -121,7 +121,7 @@
 
         if (!CheckResetPasswordToken($conn, $email, $token)) return false;
 
-        $query = $conn->prepare('UPDATE users SET password_hash=?,resetpassword_token=NULL,resetpassword_timestamp=NULL WHERE email LIKE ? AND resetpassword_token LIKE ?;');
+        $query = $conn->prepare('UPDATE MFUsers SET password_hash=?,resetpassword_token=NULL,resetpassword_timestamp=NULL WHERE email LIKE ? AND resetpassword_token LIKE ?;');
 
         $hash = getPasswordHash($pass);
 
@@ -135,7 +135,7 @@
 
     function RequestResetPassword($conn, $email) {
 
-        $query = $conn->prepare('UPDATE users SET resetpassword_token=?,resetpassword_timestamp=CURRENT_TIMESTAMP WHERE email LIKE ?;');
+        $query = $conn->prepare('UPDATE MFUsers SET resetpassword_token=?,resetpassword_timestamp=CURRENT_TIMESTAMP WHERE email LIKE ?;');
         
         // Reset password token
         $resetpassword_token = bin2hex(openssl_random_pseudo_bytes(32));
@@ -198,7 +198,7 @@
 
     function isUserVerified($conn, $username) {
         
-        $query = $conn->prepare('SELECT verified FROM users WHERE username LIKE ? AND verified = 1;');
+        $query = $conn->prepare('SELECT verified FROM MFUsers WHERE username LIKE ? AND verified = 1;');
         $query->bind_param('s', $username);
         $query->execute();
 
