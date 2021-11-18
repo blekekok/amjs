@@ -149,11 +149,11 @@ function setActiveThread(threadid, fromLink=false) {
         $('#bottom-seperator h1').html(`Thread in : ${result.displayname}`);
         $('#bottom-seperator h2').remove();
 
-        $('#content').append(
+        $('#content-header').append(
             `
                 <div id="thread-header">
                     <h1>${result.title}</h1>
-                    <span>Posted on October 31st 2019 07:12 PM by ${result.author}</span>
+                    <span>Posted on ${result.creation_date} by ${result.author}</span>
                     <div>
                         <img src="src/res/history.svg" alt="">
                         <span>${formatTimeAsText(result.lastactivity)}.</span>
@@ -167,6 +167,16 @@ function setActiveThread(threadid, fromLink=false) {
 
         console.log(result);
     }
+}
+
+$('#thread-content').append(buildThreadPost());
+
+function buildThreadPost() {
+
+    let postWrapper = $('<div/>', {'class': 'post-wrapper'});
+
+    return postWrapper;
+
 }
 
 function getGroups() {
@@ -259,7 +269,7 @@ function getThreadContent(threadid) {
     return null;
 }
 
-function formatTimeAsText(time = 0) {
+function formatTimeAsText(time = 0, short=true) {
 
     // Years
     if (time >= 31536000) {
@@ -273,11 +283,18 @@ function formatTimeAsText(time = 0) {
     // Seconds
     if (time < 60)
         return 'Moments ago';
-
+        
     // Minutes
     time =  (time / 60) | 0;
     if (time < 60)
-        return `${time}m ago`;
+        if (short) {
+            return `${time}m ago`;
+        } else {
+            if (time == 1)
+                return `${time} minute ago`;
+            
+            return `${time} minutes ago`;
+        }
 
     // Hours
     time =  (time / 60) | 0;

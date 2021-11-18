@@ -1,5 +1,18 @@
 <?php
 
+    function canUserCreateThread($conn, $username) {
+
+        $query = $conn->prepare('SELECT username FROM MFUsers A JOIN MFSilences B ON A.id = B.userid WHERE username LIKE ? AND verified = 1;');
+        $query->bind_param('s', $username);
+        $query->execute();
+
+        $result = $query->get_result();
+        if (!$result || $result->num_rows >= 1) return false;
+
+        return true;
+
+    }
+
     function getGroups($conn) {
 
         $query = $conn->prepare('SELECT * FROM MFGroups;');
@@ -52,7 +65,7 @@
 
     function getThreadContent($conn, $id) {
 
-        $query = $conn->prepare('SELECT title,categoryid,groupid,displayname,username as author, timestampdiff(SECOND, A.lastactivity,NOW()) as lastactivity FROM MFThreads A JOIN MFCategories B ON A.categoryid = B.id JOIN MFUsers C ON A.authorid = C.id WHERE A.id = ?;');
+        $query = $conn->prepare('SELECT title,categoryid,groupid,displayname,username as author, timestampdiff(SECOND, A.lastactivity,NOW()) as lastactivity, DATE_FORMAT(A.creation_date, "%M %D %Y %h:%i %p") as creation_date FROM MFThreads A JOIN MFCategories B ON A.categoryid = B.id JOIN MFUsers C ON A.authorid = C.id WHERE A.id = ?;');
         $query->bind_param('i', $id);
         $query->execute();
         
