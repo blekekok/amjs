@@ -17,19 +17,14 @@ function setGroups(active=-1, categoryid=-1) {
         groupList.empty();
 
         groups.forEach(group => {
-            let listItem = document.createElement('li');
-            listItem.innerHTML = `<span>${group.displayname}</span>`;
-
-            if (group.id == active || active == -1 && group.id == groups[0].id) listItem.classList.add('active');
-            
-            listItem.onclick = () => {
+            $('<li/>', {
+                'class': group.id == active || active == -1 && group.id == groups[0].id ? 'active': '',
+                'html': `<span>${group.displayname}</span>`
+            }).on('click', function () {
                 $('#group-list li').removeClass('active');
-                listItem.classList.add('active');
-
+                $(this).addClass('active');
                 setCategories(group.id);
-            }
-            
-            groupList.append(listItem);
+            }).appendTo(groupList);
         });
         
         if (active == -1) {
@@ -49,18 +44,14 @@ function setCategories(groupid=1, active=-1) {
 
     if (categories && categories.length) {
         categories.forEach(category => {
-            let listItem = document.createElement('li');
-            listItem.innerHTML = `<span>${category.displayname}</span>`;
-
-            if (category.id == active || (active == -1 && category.id == categories[0].id)) listItem.classList.add('active');
-
-            listItem.onclick = () => {
+            $('<li/>', {
+                'class': category.id == active || (active == -1 && category.id == categories[0].id) ? 'active' : '',
+                'html': `<span>${category.displayname}</span>`
+            }).on('click', function () {
                 $('#category-list li').removeClass('active');
-                listItem.classList.add('active');
+                $(this).addClass('active');
                 setThreadTitles(category.id);
-            }
-
-            categoryList.append(listItem);
+            }).appendTo(categoryList);
         });
 
         if (active == -1) {
@@ -79,61 +70,34 @@ function setThreadTitles(categoryid=2) {
     if (threads) {
 
         threads.forEach(thread => {
-            let listItem = document.createElement('li');
+            let listItem = $('<li/>');
 
-            // Badge
-            let badgeElem = document.createElement('span');
-            badgeElem.classList.add('badge');
-            if (thread.hot) 
-                badgeElem.innerHTML = '[HOT]';
-
-            // Title
-            let titleElem = document.createElement('span');
-            titleElem.classList.add('title');
-            titleElem.innerHTML = thread.title;
-
-            titleElem.onclick = () => {
-
+            $('<span/>', {'class': 'badge', 'html' : thread.hot ? '[HOT]' : ''}).appendTo(listItem);
+            $('<span/>', {'class': 'title', 'html': thread.title}).on('click', () => {
                 setActiveThread(thread.id);
+            }).appendTo(listItem);
 
-            }
+            let metaDiv = $('<div/>', {'class': 'meta'});
 
-            // Meta Div
-            let metaDiv = document.createElement('div');
-            metaDiv.classList.add('meta');
-
-            // Sub Meta Div
-            let subMetaDiv = document.createElement('div');
-            subMetaDiv.classList.add('sub-meta');
-
-            // Author
-            let authorElem = document.createElement('span');
-            authorElem.classList.add('author');
-            authorElem.innerHTML = `by ${thread.author}`;
-
-            // View Counter
-            let viewsDiv = document.createElement('div');
-            viewsDiv.innerHTML = `
+            let subMetaDiv = $('<div/>', {'class': 'sub-meta'});
+            $('<span/>', {'class': 'author', 'html': `by ${thread.author}`}).appendTo(subMetaDiv);
+            $('<div/>', {'html': `
                 <img src="src/res/eye.svg" alt="">
                 <span>${convertNumberToShortened(thread.views)}</span>
-            `;
-            subMetaDiv.append(authorElem, viewsDiv);
+            `}).appendTo(subMetaDiv);
+            subMetaDiv.appendTo(metaDiv);
 
             // Total Post Counter
-            let postsDiv = document.createElement('div');
-            postsDiv.classList.add('posts');
-            postsDiv.innerHTML = `
+            $('<div/>', {'class': 'posts', 'html': `
                 <img src="src/res/comment.svg" alt="">
                 <span>${convertNumberToShortened(thread.posts)}</span>
-            `;
+            `}).appendTo(metaDiv);
 
             // Time
-            let timeElem = document.createElement('span');
-            timeElem.classList.add('time');
-            timeElem.innerHTML = formatTimeAsText(thread.age);
-            metaDiv.append(subMetaDiv, postsDiv, timeElem);
-            listItem.append(badgeElem, titleElem, metaDiv);
-            threadList.append(listItem);
+            $('<span/>', {'class': 'time', 'html': formatTimeAsText(thread.age)}).appendTo(metaDiv);
+            
+            metaDiv.appendTo(listItem);
+            listItem.appendTo(threadList);
         });
     }
 }
@@ -142,21 +106,24 @@ function setActiveThread(threadid, fromLink=false) {
     let result = getThreadContent(threadid);
 
     if (result) {
+        let threadContent = result.content;
+
         if (fromLink) {
-            setGroups(result.groupid, result.categoryid);
+            setGroups(threadContent.groupId, threadContent.categoryId);
         }
 
-        $('#bottom-seperator h1').html(`Thread in : ${result.displayname}`);
+        $('#bottom-seperator h1').html(`Thread in : ${threadContent.categoryName}`);
         $('#bottom-seperator h2').remove();
 
+        $('#content-header').empty();
         $('#content-header').append(
             `
                 <div id="thread-header">
-                    <h1>${result.title}</h1>
-                    <span>Posted on ${result.creation_date} by ${result.author}</span>
+                    <h1>${threadContent.title}</h1>
+                    <span>Posted on ${threadContent.threadDate} by ${threadContent.author}</span>
                     <div>
                         <img src="src/res/history.svg" alt="">
-                        <span>${formatTimeAsText(result.lastactivity)}.</span>
+                        <span>${formatTimeAsText(threadContent.threadLastActivity)}.</span>
                     </div>
                 </div>
                 <div class="seperator">
@@ -165,18 +132,245 @@ function setActiveThread(threadid, fromLink=false) {
             `
         );
 
-        console.log(result);
+        console.log(threadContent);
+
+        $('#thread-content').empty();
+        $('#thread-content').append(buildThreadPost('Main Post', threadContent, true))
+
+        let postsContent = result.posts;
+        if (postsContent) {
+            
+            postsContent.forEach(post => {
+                $('#thread-content').append(buildThreadPost(post.targetUsername ? `Reply to ${post.targetUsername}` : 'Reply to Main Post', post, false))
+            });
+
+        }
     }
 }
 
-$('#thread-content').append(buildThreadPost());
-
-function buildThreadPost() {
+function buildThreadPost(title, content, isThread=false) {
 
     let postWrapper = $('<div/>', {'class': 'post-wrapper'});
+    
+    // Post Header
+    $('<div/>', {'class': 'post-header', 'html': `
+        <span>${title}</span>
+        <div>
+            <img src="src/res/clock.svg" alt="">
+            <span>${formatTimeAsText(content.postDate, false)}</span>
+        </div>
+    `}).appendTo(postWrapper);
+    
+    // Post Content
+    let postContent = $('<div/>', {'class': 'post-content'});
+    
+    // User Info
+    let userInfo = $('<div/>', {'class': 'user-info'});
+    let userProfile = $('<div/>', {'class': 'user-profile'});
+    
+    // User profile contents
+    $('<a/>', {'class': 'avatar', 'html': `<img src="${content.avatarURL ? content.avatarURL : 'src/res/default-user-icon.jpg'}" alt="">`, 'href': `/profile?user=${content.author}`}).appendTo(userProfile);
+    $('<a/>', {'class': 'username', 'html': content.author, 'href': `/profile?user=${content.author}`}).appendTo(userProfile);
+    $('<span/>', {'class': 'status', 'html': content.active ? 'Online' : 'Offline'}).appendTo(userProfile);
+    userProfile.appendTo(userInfo);
+    
+    let roleName = 'User';
+    switch (content.role) {
+        case 'user':
+            roleName = 'User';
+        break;
+        
+        case 'mod':
+            roleName = 'Moderator';
+            break;
+            
+            case 'siteadmin':
+                roleName = 'Site Admin';
+        break;
+    }
+    
+    let modStatusText = 'Active';
+    switch (content.modStatus) {
+        case 2:
+            modStatusText = 'Silenced';
+            break;
+            
+        case 3:
+            modStatusText = 'Banned';
+            break;
+    }
 
+    // User Data
+    $('<div/>', {'class': 'user-data', 'html': `
+        <div><img src="src/res/user-dark.svg" alt=""><span>${roleName}</span></div>
+        <div><img src="src/res/pencil.svg" alt=""><span>${content.totalUserPosts} posts</span></div>
+        <div><img src="src/res/login.svg" alt=""><span>${formatTimeAsText(content.lastLogin, false)}</span></div>
+        <div><img src="src/res/info.svg" alt=""><span>${modStatusText}</span></div>
+    `}).appendTo(userInfo);
+    userInfo.appendTo(postContent);
+
+    // Post Content
+    $('<div/>', {'class': 'post-body', 'html': `<p>${content.postBody}</p>`}).appendTo(postContent);
+    postContent.appendTo(postWrapper);
+
+    // Post Footer
+    let totalLikes = content.totalPostLikes;
+    let postFooter = $('<div/>', {'class': 'post-footer'});
+
+    let postLikes = $('<div/>', {'class': 'favorite', 'html': `
+        <img src="src/res/heart.svg" alt="">
+        <span>${totalLikes} user${totalLikes > 1 ? 's' : ''} favorited this post</span>
+    `}).appendTo(postFooter);
+
+    let postButtons = $('<div/>', {'class': 'post-buttons'});
+
+    //$('<button/>', {'html': '<img src="src/res/heart.svg" alt="">'}).on('click', () => {console.log('nothing for now')}).appendTo(postButtons);
+
+    if (!content.isAuthor) {   
+        let isLiked = content.isLiked;
+        $('<button/>', {'html': `<img src="src/res/${isLiked ? 'heart-filled.svg' : 'heart.svg'}" alt="">`}).on('click', function () {
+            if (updatePostLike(content.id, !isLiked, isThread)) {
+                
+                if (isLiked) {
+                    isLiked = false;
+                    totalLikes--;
+                } else {
+                    isLiked = true;
+                    totalLikes++;
+                }
+                
+                $(this).html(`<img src="src/res/${isLiked ? 'heart-filled.svg' : 'heart.svg'}" alt="">`);
+                
+                $(postLikes).html(`
+                <img src="src/res/heart.svg" alt="">
+                <span>${totalLikes} user${totalLikes > 1 ? 's' : ''} favorited this post</span>
+                `);
+            }
+        }).appendTo(postButtons);
+    }
+        
+        postButtons.appendTo(postFooter);
+        
+    postFooter.appendTo(postWrapper);
+    
     return postWrapper;
+    
+}
 
+let content = {
+    username: 'blekekok',
+    active: 1
+};
+
+$('#thread-content').append(buildCreatePostBuilder('Create reply to Main Post', content, false));
+
+function buildCreatePostBuilder(title, content, isThread=false) {
+
+    let postWrapper = $('<div/>', {'class': 'post-wrapper'});
+    
+    // Post Header
+    $('<div/>', {'class': 'post-header', 'html': `
+        <span>${title}</span>
+        <div>
+            <img src="src/res/clock.svg" alt="">
+            <span>${formatTimeAsText(content.postDate, false)}</span>
+        </div>
+    `}).appendTo(postWrapper);
+    
+    // Post Content
+    let postContent = $('<div/>', {'class': 'post-content'});
+    
+    // User Info
+    let userInfo = $('<div/>', {'class': 'user-info'});
+    let userProfile = $('<div/>', {'class': 'user-profile'});
+    
+    // User profile contents
+    $('<a/>', {'class': 'avatar', 'html': `<img src="${content.avatarURL ? content.avatarURL : 'src/res/default-user-icon.jpg'}" alt="">`, 'href': `/profile?user=${content.author}`}).appendTo(userProfile);
+    $('<a/>', {'class': 'username', 'html': content.author, 'href': `/profile?user=${content.author}`}).appendTo(userProfile);
+    $('<span/>', {'class': 'status', 'html': content.active ? 'Online' : 'Offline'}).appendTo(userProfile);
+    userProfile.appendTo(userInfo);
+    
+    let roleName = 'User';
+    switch (content.role) {
+        case 'user':
+            roleName = 'User';
+        break;
+        
+        case 'mod':
+            roleName = 'Moderator';
+            break;
+            
+            case 'siteadmin':
+                roleName = 'Site Admin';
+        break;
+    }
+    
+    let modStatusText = 'Active';
+    switch (content.modStatus) {
+        case 2:
+            modStatusText = 'Silenced';
+            break;
+            
+        case 3:
+            modStatusText = 'Banned';
+            break;
+    }
+
+    // User Data
+    $('<div/>', {'class': 'user-data', 'html': `
+        <div><img src="src/res/user-dark.svg" alt=""><span>${roleName}</span></div>
+        <div><img src="src/res/pencil.svg" alt=""><span>${content.totalUserPosts} posts</span></div>
+        <div><img src="src/res/login.svg" alt=""><span>${formatTimeAsText(content.lastLogin, false)}</span></div>
+        <div><img src="src/res/info.svg" alt=""><span>${modStatusText}</span></div>
+    `}).appendTo(userInfo);
+    userInfo.appendTo(postContent);
+
+    // Post Content
+    $('<div/>', {'class': 'post-body', 'html': `<div class="post-editor"><div id="editor"></div></div>`}).appendTo(postContent);
+    postContent.appendTo(postWrapper);
+
+    // Post Footer
+    let totalLikes = content.totalPostLikes;
+    let postFooter = $('<div/>', {'class': 'post-footer'});
+
+    let postLikes = $('<div/>', {'class': 'favorite', 'html': `
+        <img src="src/res/heart.svg" alt="">
+        <span>${totalLikes} user${totalLikes > 1 ? 's' : ''} favorited this post</span>
+    `}).appendTo(postFooter);
+
+    let postButtons = $('<div/>', {'class': 'post-buttons'});
+
+    //$('<button/>', {'html': '<img src="src/res/heart.svg" alt="">'}).on('click', () => {console.log('nothing for now')}).appendTo(postButtons);
+
+    if (!content.isAuthor) {   
+        let isLiked = content.isLiked;
+        $('<button/>', {'html': `<img src="src/res/${isLiked ? 'heart-filled.svg' : 'heart.svg'}" alt="">`}).on('click', function () {
+            if (updatePostLike(content.id, !isLiked, isThread)) {
+                
+                if (isLiked) {
+                    isLiked = false;
+                    totalLikes--;
+                } else {
+                    isLiked = true;
+                    totalLikes++;
+                }
+                
+                $(this).html(`<img src="src/res/${isLiked ? 'heart-filled.svg' : 'heart.svg'}" alt="">`);
+                
+                $(postLikes).html(`
+                <img src="src/res/heart.svg" alt="">
+                <span>${totalLikes} user${totalLikes > 1 ? 's' : ''} favorited this post</span>
+                `);
+            }
+        }).appendTo(postButtons);
+    }
+        
+        postButtons.appendTo(postFooter);
+        
+    postFooter.appendTo(postWrapper);
+    
+    return postWrapper;
+    
 }
 
 function getGroups() {
@@ -254,7 +448,7 @@ function getThreadContent(threadid) {
     switch (responseData.response) {
         case 200:
             history.replaceState('', '', `/index.php?thread=${threadid}`);
-            return responseData.content;
+            return responseData;
 
         case 500 && 404:
             history.replaceState('', '', '/');
@@ -265,8 +459,27 @@ function getThreadContent(threadid) {
             window.location.replace('/login.php');
             break;
     }
+}
 
-    return null;
+function updatePostLike(id, isLike=false, isThread=false) {
+    let responseData = null;
+
+    $.post({
+        url: 'index.php',
+        dataType: 'json',
+        async: false,
+        data: {
+            action: 'post-like',
+            id: id,
+            islike: isLike ? 1 : 0,
+            isthread: isThread ? 1 : 0
+        },
+        success: (result) => {
+            responseData = result;
+        }
+    });
+
+    return responseData.response;
 }
 
 function formatTimeAsText(time = 0, short=true) {
@@ -348,3 +561,7 @@ function convertNumberToShortened(num) {
 
     return num;
 }
+
+new Quill('#editor', {
+    theme: 'snow'
+});

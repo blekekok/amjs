@@ -44,7 +44,8 @@
 
         if ($auth) {
             
-            $query = $conn->prepare('SELECT role,username FROM MFUsers WHERE username LIKE ? OR email LIKE ?;');
+            // Get user details
+            $query = $conn->prepare('SELECT id,role,username FROM MFUsers WHERE username LIKE ? OR email LIKE ?;');
             $query->bind_param('ss', $user, $user);
             $query->execute();
 
@@ -54,8 +55,15 @@
 
             $data = $result->fetch_assoc();
 
+            // Save user details into its session
             $_SESSION['role'] = $data['role'];
             $_SESSION['username'] = $data['username'];
+            $_SESSION['userid'] = $data['id'];
+
+            // Set user details after log on
+            $query = $conn->prepare('UPDATE MFUsers SET lastlogin=CURRENT_TIMESTAMP WHERE username LIKE ?;');
+            $query->bind_param('s', $user);
+            $query->execute();
 
         }
 

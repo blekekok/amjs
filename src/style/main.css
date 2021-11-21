@@ -215,7 +215,7 @@
 .post-wrapper {
     display: flex;
     flex-direction: column;
-    margin-bottom: 40px;
+    margin-bottom: 35px;
     min-height: 350px;
     box-shadow: 0px 3px 15px rgba(0,0,0,0.15);
 }
@@ -265,18 +265,32 @@
     justify-content: center;
     height: 225px;
     border-bottom: solid 1px var(--light-gray);
+    color: var(--dark-grey);
 }
 
-.post-wrapper > .post-content > .user-info > .user-profile > img {
-    margin-bottom: 24px;
+.post-wrapper > .post-content > .user-info > .user-profile > .avatar > img {
     height: 100px;
     border-radius: 50%;
     box-shadow: 1px 6px 8px -2px rgba(0,0,0,0.6);
 }
 
+.post-wrapper > .post-content > .user-info > .user-profile > .avatar {
+    margin-bottom: 24px;
+}
+
+.post-wrapper > .post-content > .user-info > .user-profile > .avatar:hover {
+    filter: brightness(95%);
+}
+
 .post-wrapper > .post-content > .user-info > .user-profile > .username {
+    text-decoration: none;
     font-size: 20px;
     margin-bottom: 4px;
+    color: var(--dark-gray);
+}
+
+.post-wrapper > .post-content > .user-info > .user-profile > .username:hover {
+    filter: brightness(150%);
 }
 
 .post-wrapper > .post-content > .user-info > .user-profile > .status {
@@ -311,12 +325,31 @@
 }
 
 .post-wrapper > .post-content > .post-body {
-    padding: 12px;
+    display: flex;
+    width: 100%;
 }
 
 .post-wrapper > .post-content > .post-body > p {
     margin: 0;
-    padding: 0;
+    padding: 12px;
+}
+
+.post-wrapper > .post-content > .post-body > .post-editor {
+    display: flex;
+    flex-direction: column;
+    justify-content: stretch;
+    align-items: stretch;
+    width: 100%;
+    margin: 0;
+}
+
+.post-wrapper > .post-content > .post-body > .post-editor > .ql-toolbar {
+    border-left: none;
+}
+
+.post-wrapper > .post-content > .post-body > .post-editor > #editor {
+    border-bottom: none;
+    border-left: none;
 }
 
 .post-wrapper > .post-footer {

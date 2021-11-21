@@ -7,6 +7,7 @@
     $action_type = $_POST['action'];
 
     if (isset($action_type)) {
+
         switch($action_type) {
     
             case 'get-groups':
@@ -29,6 +30,19 @@
                 $threadid = $_POST['threadid'];
                 if (isset($threadid)) {
                     echo getThreadContent($conn, $threadid);
+                }
+                break;
+
+            case 'post-like':
+                $id = $_POST['id'];
+                $isLike = $_POST['islike'];
+                $isThread = $_POST['isthread'];
+                if (isset($id) && isset($isLike) && isset($isThread)) {
+                    if ($isThread) {
+                        echo likeThreadPost($conn, $id, $isLike);
+                    } else {
+                        echo likePost($conn, $id, $isLike);
+                    }
                 }
                 break;
         }
