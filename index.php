@@ -45,6 +45,20 @@
                     }
                 }
                 break;
+
+            case 'get-userdata':
+                echo getUserData($conn);
+                break;
+
+            case 'thread-create':
+                $categoryid = $_POST['categoryid'];
+                $title = $_POST['title'];
+                $content = $_POST['content'];
+
+                if (isset($categoryid) && isset($title) && isset($content)) {
+                    echo createThread($conn, $categoryid, $title, $content);
+                }
+                break;
         }
 
         return;

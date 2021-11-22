@@ -15,6 +15,14 @@
     <title>Metaforums</title>
 </head>
 <body>
+    <div id="error-message">
+        <div>
+            <span>asdasdads</span>
+            <button>
+                <img src="src/res/close.svg" alt="">
+            </button>
+        </div>
+    </div>
     <?php include 'src/php/page-header.php' ?>
     <div class="seperator">
         <h1>Forum Groups</h1>
@@ -22,7 +30,7 @@
         <?php 
             if (isset($_SESSION['role']) && canUserCreateThread($conn, $_SESSION['username'])) {
                 echo '
-                    <button class="create-thread-button">
+                    <button id="create-thread-button">
                         <img src="src/res/note.svg" alt="">
                         CREATE THREAD
                     </button>

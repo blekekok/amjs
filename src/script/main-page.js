@@ -1,3 +1,6 @@
+var currentActiveCategory = null;
+var currentActiveUserText = '';
+
 var currentURL = new URLSearchParams(window.location.search);
 
 if (currentURL.has('thread')) {
@@ -7,7 +10,6 @@ if (currentURL.has('thread')) {
 } else {
     setGroups();
 }
-
 
 function setGroups(active=-1, categoryid=-1) {
     let groups = getGroups();
@@ -42,6 +44,8 @@ function setCategories(groupid=1, active=-1) {
     categoryList.empty();
     $('#thread-list').empty();
 
+    currentActiveCategory = null;
+
     if (categories && categories.length) {
         categories.forEach(category => {
             $('<li/>', {
@@ -66,6 +70,8 @@ function setThreadTitles(categoryid=2) {
     let threads = getThreadTitles(categoryid);
     let threadList = $('#thread-list');
     threadList.empty();
+
+    currentActiveCategory = categoryid;
 
     if (threads) {
 
@@ -113,7 +119,7 @@ function setActiveThread(threadid, fromLink=false) {
         }
 
         $('#bottom-seperator h1').html(`Thread in : ${threadContent.categoryName}`);
-        $('#bottom-seperator h2').remove();
+        $('#bottom-seperator h2').hide();
 
         $('#content-header').empty();
         $('#content-header').append(
@@ -132,10 +138,13 @@ function setActiveThread(threadid, fromLink=false) {
             `
         );
 
-        console.log(threadContent);
-
         $('#thread-content').empty();
-        $('#thread-content').append(buildThreadPost('Main Post', threadContent, true))
+
+        let threadPost = buildThreadPost('Main Post', threadContent, true);
+
+        $('#thread-content').append(threadPost);
+
+        $('html,body').animate({scrollTop: threadPost.offset().top}, 'fast');
 
         let postsContent = result.posts;
         if (postsContent) {
@@ -210,7 +219,7 @@ function buildThreadPost(title, content, isThread=false) {
     userInfo.appendTo(postContent);
 
     // Post Content
-    $('<div/>', {'class': 'post-body', 'html': `<p>${content.postBody}</p>`}).appendTo(postContent);
+    $('<div/>', {'class': 'post-body', 'html': `<div class="content">${content.postBody}</div>`}).appendTo(postContent);
     postContent.appendTo(postWrapper);
 
     // Post Footer
@@ -226,6 +235,7 @@ function buildThreadPost(title, content, isThread=false) {
 
     //$('<button/>', {'html': '<img src="src/res/heart.svg" alt="">'}).on('click', () => {console.log('nothing for now')}).appendTo(postButtons);
 
+    // Like Button
     if (!content.isAuthor) {   
         let isLiked = content.isLiked;
         $('<button/>', {'html': `<img src="src/res/${isLiked ? 'heart-filled.svg' : 'heart.svg'}" alt="">`}).on('click', function () {
@@ -242,14 +252,26 @@ function buildThreadPost(title, content, isThread=false) {
                 $(this).html(`<img src="src/res/${isLiked ? 'heart-filled.svg' : 'heart.svg'}" alt="">`);
                 
                 $(postLikes).html(`
-                <img src="src/res/heart.svg" alt="">
-                <span>${totalLikes} user${totalLikes > 1 ? 's' : ''} favorited this post</span>
+                    <img src="src/res/heart.svg" alt="">
+                    <span>${totalLikes} user${totalLikes > 1 ? 's' : ''} favorited this post</span>
                 `);
             }
         }).appendTo(postButtons);
     }
-        
-        postButtons.appendTo(postFooter);
+    
+    // Reply Button
+    $('<button/>', {'html': '<img src="src/res/reply.svg" alt="">'}).on('click', () => {
+
+        $('#reply-post').remove();
+
+        let replyPost = buildCreatePostBuilder(isThread ? 'Creating Reply to Main Post' : `Creating Reply to ${content.author}`, 1, content.threadId);
+        $('#thread-content').append(replyPost);
+
+        $('html,body').animate({scrollTop: replyPost.offset().top}, 'fast');
+
+    }).appendTo(postButtons);
+
+    postButtons.appendTo(postFooter);
         
     postFooter.appendTo(postWrapper);
     
@@ -257,25 +279,52 @@ function buildThreadPost(title, content, isThread=false) {
     
 }
 
-let content = {
-    username: 'blekekok',
-    active: 1
-};
+// On create thread click
+$('#create-thread-button').on('click', () => {
 
-$('#thread-content').append(buildCreatePostBuilder('Create reply to Main Post', content, false));
+    let activeCategory = $('#category-list .active');
 
-function buildCreatePostBuilder(title, content, isThread=false) {
+    if (activeCategory.length <= 0 && !currentActiveCategory) {
+        showError('Error, no category!');
+        return;
+    }
+
+    $('#bottom-seperator h1').html(`Creating a Thread`);
+    $('#bottom-seperator h2').hide();
+    $('#content-header').empty();
+    $('#thread-content').empty();
+
+    let threadCreatePostBuilder = buildCreatePostBuilder(`Creating Thread in ${$('#category-list .active span').html()}`, 0, currentActiveCategory);
+
+    $('#thread-content').append(threadCreatePostBuilder);
+
+    history.replaceState('', '', '/');
+
+    $('html,body').animate({scrollTop: threadCreatePostBuilder.offset().top}, 'fast');
+
+});
+
+function buildCreatePostBuilder(title, type=0, id=0) {
+
+    /**
+     * 0 -> Create
+     * 1 -> Reply
+     * 2 -> Edit
+     */
+
+     let content = getSelfUserData();
+
+     if (!content) {
+         showError('An unknown error occurred!');
+         return;
+     }
 
     let postWrapper = $('<div/>', {'class': 'post-wrapper'});
     
+    if (type == 1) postWrapper.prop('id', 'reply-post');
+
     // Post Header
-    $('<div/>', {'class': 'post-header', 'html': `
-        <span>${title}</span>
-        <div>
-            <img src="src/res/clock.svg" alt="">
-            <span>${formatTimeAsText(content.postDate, false)}</span>
-        </div>
-    `}).appendTo(postWrapper);
+    $('<div/>', {'class': 'post-header create', 'html': `<span>${title}</span>`}).appendTo(postWrapper);
     
     // Post Content
     let postContent = $('<div/>', {'class': 'post-content'});
@@ -326,51 +375,62 @@ function buildCreatePostBuilder(title, content, isThread=false) {
     userInfo.appendTo(postContent);
 
     // Post Content
-    $('<div/>', {'class': 'post-body', 'html': `<div class="post-editor"><div id="editor"></div></div>`}).appendTo(postContent);
+    let postBody = $('<div/>', {'class': 'post-body'});
+    let postTitleInput;
+    if (type == 0) postTitleInput = $('<input/>', {'class': 'post-title', 'placeholder': 'Write your title here...'}).appendTo(postBody);
+    let postEditor = $('<div/>', {'class': 'post-editor'}).appendTo(postBody).ready(function () {
+        new Quill('.post-editor', {
+            theme: 'snow'
+        });
+    });
+    postBody.appendTo(postContent);
     postContent.appendTo(postWrapper);
 
     // Post Footer
-    let totalLikes = content.totalPostLikes;
     let postFooter = $('<div/>', {'class': 'post-footer'});
 
-    let postLikes = $('<div/>', {'class': 'favorite', 'html': `
-        <img src="src/res/heart.svg" alt="">
-        <span>${totalLikes} user${totalLikes > 1 ? 's' : ''} favorited this post</span>
-    `}).appendTo(postFooter);
+    $('<button/>', {'html': '<img src="src/res/close.svg" alt="">'}).on('click', () => {
+        switch (type) {
+            case 0:
+                $('#bottom-seperator h1').html(`Site`);
+                $('#bottom-seperator h2').show();
+                $('#thread-content').empty();
+                break;
 
-    let postButtons = $('<div/>', {'class': 'post-buttons'});
+            case 1:
 
-    //$('<button/>', {'html': '<img src="src/res/heart.svg" alt="">'}).on('click', () => {console.log('nothing for now')}).appendTo(postButtons);
-
-    if (!content.isAuthor) {   
-        let isLiked = content.isLiked;
-        $('<button/>', {'html': `<img src="src/res/${isLiked ? 'heart-filled.svg' : 'heart.svg'}" alt="">`}).on('click', function () {
-            if (updatePostLike(content.id, !isLiked, isThread)) {
-                
-                if (isLiked) {
-                    isLiked = false;
-                    totalLikes--;
-                } else {
-                    isLiked = true;
-                    totalLikes++;
-                }
-                
-                $(this).html(`<img src="src/res/${isLiked ? 'heart-filled.svg' : 'heart.svg'}" alt="">`);
-                
-                $(postLikes).html(`
-                <img src="src/res/heart.svg" alt="">
-                <span>${totalLikes} user${totalLikes > 1 ? 's' : ''} favorited this post</span>
-                `);
-            }
-        }).appendTo(postButtons);
-    }
+                break;
+        }
+    }).appendTo(postFooter);
+    $('<button/>', {'html': '<img src="src/res/check.svg" alt="">'}).on('click', () => {
+        switch (type) {
+            case 0:
+                let postTitle = $(postTitleInput).val();
+                let postContent = $(postEditor).children('.ql-editor').html();
         
-        postButtons.appendTo(postFooter);
+                if (postTitle.length < 1 || postContent.replaceAll(/<[a-zA-Z\/]+>/gm, '').length < 1) {
+                    showError('Title or body should not be empty!');
+                    return;
+                }
+        
+                let response = createThread(id, postTitle, postContent);
+                if (response) 
+                    window.location.replace(`/index.php?thread=${response.id}`);
+                break;
+
+            case 1:
+
+                
+
+                break;
+        }
+
+
+    }).appendTo(postFooter);
         
     postFooter.appendTo(postWrapper);
     
     return postWrapper;
-    
 }
 
 function getGroups() {
@@ -482,6 +542,70 @@ function updatePostLike(id, isLike=false, isThread=false) {
     return responseData.response;
 }
 
+function getSelfUserData() {
+    let responseData = null;
+
+    $.post({
+        url: 'index.php',
+        dataType: 'json',
+        async: false,
+        data: {
+            action: 'get-userdata'
+        },
+        success: (result) => {
+            responseData = result;
+        }
+    });
+    
+    switch (responseData.response) {
+        case 200:
+            return responseData.content;
+
+        case 500 && 404:
+            history.replaceState('', '', '/');
+            setGroups();
+            break;
+
+        case 401:
+            window.location.replace('/login.php');
+            break;
+    }
+}
+
+function createThread(categoryid, title, content) {
+    let responseData = null;
+
+    $.post({
+        url: 'index.php',
+        dataType: 'json',
+        async: false,
+        data: {
+            action: 'thread-create',
+            categoryid : categoryid,
+            title: title,
+            content: content
+        },
+        success: (result) => {
+            responseData = result;
+        }
+    });
+
+    switch (responseData.response) {
+        case 200:
+            return responseData;
+
+        case 401:
+            window.location.replace('/login.php');
+            break;
+            
+        case 500 && 404 && 403:
+            showError('Unable to create thread!');
+            return false;
+    }
+
+    return false;
+}
+
 function formatTimeAsText(time = 0, short=true) {
 
     // Years
@@ -562,6 +686,11 @@ function convertNumberToShortened(num) {
     return num;
 }
 
-new Quill('#editor', {
-    theme: 'snow'
+$('#error-message button').on('click', function () {
+    $('#error-message').hide(300);
 });
+
+function showError(message='') {
+    $('#error-message span').html(message);
+    $('#error-message').show(300);
+}

@@ -1,5 +1,51 @@
 @import "styles.css";
 
+body {
+    position: relative;
+}
+
+#error-message {
+    position: fixed;
+    display: none;
+    margin-top: 10px;
+    padding: 0 16px;
+    width: inherit;
+    height: 50px;
+    color: white;
+    background-color: var(--accent-red);
+    border-radius: 10px;
+    z-index: 10;
+}
+
+#error-message div {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#error-message button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 25px;
+    height: 25px;
+    margin-left: 25px;;
+    border: none;
+    filter: brightness(600%);
+    background-color: transparent;
+}
+
+#error-message button:hover {
+    cursor: pointer;
+    filter: brightness(500%);
+}
+
+#error-message button:active {
+    filter: brightness(450%);
+}
+
 .seperator {
     position: relative;
     height: 40px;
@@ -12,7 +58,7 @@
     color: var(--dark-gray);
 }
 
-.seperator > .create-thread-button {
+.seperator > #create-thread-button {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -23,16 +69,16 @@
     transition: all 75ms ease-in-out;
 }
 
-.seperator > .create-thread-button:hover {
+.seperator > #create-thread-button:hover {
     cursor: pointer;
     filter: brightness(90%);
 }
 
-.seperator > .create-thread-button:active {
+.seperator > #create-thread-button:active {
     filter: brightness(80%);
 }
 
-.seperator > .create-thread-button > img {
+.seperator > #create-thread-button > img {
     margin-right: 6px;
 }
 
@@ -229,6 +275,14 @@
     background-color: var(--accent-turquoise);
 }
 
+.post-wrapper > .post-header.create {
+    background-color: var(--accent-magenta) !important;
+}
+
+.post-wrapper > .post-header.create > span {
+    color: white;
+}
+ 
 .post-wrapper > .post-header > div {
     display: flex;
     justify-content: flex-end;
@@ -326,16 +380,6 @@
 
 .post-wrapper > .post-content > .post-body {
     display: flex;
-    width: 100%;
-}
-
-.post-wrapper > .post-content > .post-body > p {
-    margin: 0;
-    padding: 12px;
-}
-
-.post-wrapper > .post-content > .post-body > .post-editor {
-    display: flex;
     flex-direction: column;
     justify-content: stretch;
     align-items: stretch;
@@ -343,11 +387,26 @@
     margin: 0;
 }
 
-.post-wrapper > .post-content > .post-body > .post-editor > .ql-toolbar {
+.post-wrapper > .post-content > .post-body > .content {
+    margin: 0;
+    padding-left: 12px;
+}
+
+.post-wrapper > .post-content > .post-body > .post-title {
+    padding: 0 10px;
+    height: 50px;
+    border: none;
+}
+
+.post-wrapper > .post-content > .post-body > .post-title:focus {
+    outline: none;
+}
+
+.post-wrapper > .post-content > .post-body > .ql-toolbar {
     border-left: none;
 }
 
-.post-wrapper > .post-content > .post-body > .post-editor > #editor {
+.post-wrapper > .post-content > .post-body > .post-editor {
     border-bottom: none;
     border-left: none;
 }
@@ -373,26 +432,26 @@
 }
 
 .post-wrapper > .post-footer > .post-buttons {
+    padding-left: 4px;
     border-left: solid 1px var(--light-gray);
 }
 
-.post-wrapper > .post-footer > .post-buttons > button {
+.post-wrapper > .post-footer button {
     display: flex;
     justify-content: center;
     align-items: center;
-    margin-left: 6px;
     width: 25px;
     height: 20px;
     border: none;
     background-color: white;
 }
 
-.post-wrapper > .post-footer > .post-buttons > button:hover > img {
+.post-wrapper > .post-footer button:hover > img {
     cursor: pointer;
     filter: brightness(250%);
 }
 
-.post-wrapper > .post-footer > .post-buttons > button:active > img {
+.post-wrapper > .post-footer button:active > img {
     filter: brightness(300%);
 }
 
