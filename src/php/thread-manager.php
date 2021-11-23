@@ -69,8 +69,8 @@
 
         if (!isset($_SESSION['userid'])) return json_encode(array('response' => 401)); // Not authorized
 
-        $query = $conn->prepare('SELECT A.id, A.id as threadId, title, categoryid as categoryId, groupid as groupId, A.creation_date as postDate, DATE_FORMAT(A.creation_date, "%M %D %Y %h:%i %p") as threadDate, C.displayname as categoryName, timestampdiff(SECOND, A.lastactivity, NOW()) as threadLastActivity, timestampdiff(SECOND, A.creation_date, NOW()) as postDate, avatar as avatarURL, username as author, timestampdiff(SECOND, B.lastactivity, NOW()) <= ? as active, role, ((SELECT COUNT(*) FROM MFThreads WHERE authorid = A.authorid) + (SELECT COUNT(*) FROM MFPosts WHERE authorid = A.authorid)) as totalUserPosts, timestampdiff(SECOND, lastlogin, NOW()) as lastLogin, (SELECT level FROM MFModStatus WHERE userid = A.authorid AND timestampdiff(SECOND, NOW(), expirydate) >= 0) as modStatus, (SELECT COUNT(*) FROM MFThreadLikes WHERE threadid = A.id) as totalPostLikes, (SELECT COUNT(*) FROM MFThreadLikes WHERE threadid = A.id AND userid LIKE ?) >= 1 as isLiked, B.username LIKE ? as isAuthor, body as postBody FROM MFThreads A JOIN MFUsers B ON A.authorid = B.id JOIN MFCategories C ON A.categoryid = C.id WHERE A.id = ?;');
-        $query->bind_param('iisi', $configs['MAX_ACTIVITY_TIME'], $_SESSION['userid'], $_SESSION['username'], $id);
+        $query = $conn->prepare('SELECT A.id, A.id as threadId, title, categoryid as categoryId, groupid as groupId, A.creation_date as postDate, DATE_FORMAT(A.creation_date, "%M %D %Y %h:%i %p") as threadDate, C.displayname as categoryName, timestampdiff(SECOND, A.lastactivity, NOW()) as threadLastActivity, timestampdiff(SECOND, A.creation_date, NOW()) as postDate, avatar as avatarURL, username as author, timestampdiff(SECOND, B.lastactivity, NOW()) <= ? as active, role, ((SELECT COUNT(*) FROM MFThreads WHERE authorid = A.authorid) + (SELECT COUNT(*) FROM MFPosts WHERE authorid = A.authorid)) as totalUserPosts, timestampdiff(SECOND, lastlogin, NOW()) as lastLogin, (SELECT level FROM MFModStatus WHERE userid = A.authorid AND timestampdiff(SECOND, NOW(), expirydate) >= 0) as modStatus, (SELECT COUNT(*) FROM MFThreadLikes WHERE threadid = A.id) as totalPostLikes, (SELECT COUNT(*) FROM MFThreadLikes WHERE threadid = A.id AND userid LIKE ?) >= 1 as isLiked, B.username LIKE ? as isAuthor, body as postBody, timestampdiff(SECOND, A.creation_date, NOW()) <= ? as isEditable FROM MFThreads A JOIN MFUsers B ON A.authorid = B.id JOIN MFCategories C ON A.categoryid = C.id WHERE A.id = ?;');
+        $query->bind_param('iisii', $configs['MAX_ACTIVITY_TIME'], $_SESSION['userid'], $_SESSION['username'], $configs['EDITABLE_TIME'], $id);
         $query->execute();
         
         $result = $query->get_result();
@@ -83,8 +83,8 @@
 
         $data = array('response' => 200, 'content' => $result->fetch_assoc());
 
-        $query = $conn->prepare('SELECT A.id, threadid as threadId, timestampdiff(SECOND, A.creation_date, NOW()) as postDate, avatar as avatarURL, username as author, timestampdiff(SECOND, B.lastactivity, NOW()) <= ? as active, role, ((SELECT COUNT(*) FROM MFThreads WHERE authorid = A.authorid) + (SELECT COUNT(*) FROM MFPosts WHERE authorid = A.authorid)) as totalUserPosts, timestampdiff(SECOND, lastlogin, NOW()) as lastLogin, (SELECT level FROM MFModStatus WHERE userid = A.authorid AND timestampdiff(SECOND, NOW(), expirydate) >= 0) as modStatus, (SELECT COUNT(*) FROM MFPostLikes WHERE postid = A.id) as totalPostLikes, (SELECT COUNT(*) FROM MFPostLikes WHERE postid = A.id AND userid LIKE ?) >= 1 as isLiked, B.username LIKE ? as isAuthor, (SELECT username FROM MFUsers WHERE id = A.targetuserid) as targetUsername, body as postBody FROM MFPosts A JOIN MFUsers B ON A.authorid = B.id WHERE threadid = ? ORDER BY postDate DESC;');
-        $query->bind_param('iisi', $configs['MAX_ACTIVITY_TIME'], $_SESSION['userid'], $_SESSION['username'], $id);
+        $query = $conn->prepare('SELECT A.id, threadid as threadId, timestampdiff(SECOND, A.creation_date, NOW()) as postDate, avatar as avatarURL, username as author, timestampdiff(SECOND, B.lastactivity, NOW()) <= ? as active, role, ((SELECT COUNT(*) FROM MFThreads WHERE authorid = A.authorid) + (SELECT COUNT(*) FROM MFPosts WHERE authorid = A.authorid)) as totalUserPosts, timestampdiff(SECOND, lastlogin, NOW()) as lastLogin, (SELECT level FROM MFModStatus WHERE userid = A.authorid AND timestampdiff(SECOND, NOW(), expirydate) >= 0) as modStatus, (SELECT COUNT(*) FROM MFPostLikes WHERE postid = A.id) as totalPostLikes, (SELECT COUNT(*) FROM MFPostLikes WHERE postid = A.id AND userid LIKE ?) >= 1 as isLiked, B.username LIKE ? as isAuthor, body as postBody, timestampdiff(SECOND, A.creation_date, NOW()) <= ? as isEditable FROM MFPosts A JOIN MFUsers B ON A.authorid = B.id WHERE threadid = ? ORDER BY postDate DESC;');
+        $query->bind_param('iisii', $configs['MAX_ACTIVITY_TIME'], $_SESSION['userid'], $_SESSION['username'], $configs['EDITABLE_TIME'], $id);
         
         $query->execute();
         
@@ -193,6 +193,102 @@
         if (!$query->execute()) return json_encode(array('response' => 404));
 
         return json_encode(array('response' => 200, 'id' => $query->insert_id));
+
+    }
+
+    function createReply($conn, $threadid, $content) {
+
+        if (!isset($_SESSION['userid'])) return json_encode(array('response' => 401)); // Not authorized
+
+        $query = $conn->prepare('SELECT (SELECT locked FROM MFThreads WHERE id = ?) as locked, (SELECT COUNT(*) FROM MFUsers X JOIN MFPosts Y ON X.id = Y.authorid WHERE X.id = A.id AND verified = 0 AND timestampdiff(SECOND, Y.creation_date, NOW()) <= 86400) <= 0 as canReply, (SELECT COUNT(*) FROM MFModStatus WHERE userid = A.id AND level >= 1 AND timestampdiff(SECOND, NOW(), expirydate) >= 0) >= 1 as isBanned FROM MFUsers A WHERE id = ?;');
+        $query->bind_param('ii', $threadid, $_SESSION['userid']);
+        if (!$query->execute()) return json_encode(array('response' => 404));
+        $result = $query->get_result();
+        if (!$result || $result->num_rows < 1) return json_encode(array('response' => 404));
+
+        $data = $result->fetch_assoc();
+        if (!$data['canReply']) return json_encode(array('response' => 601));
+        if ($data['isBanned'] || $data['locked']) return json_encode(array('response' => 403));
+
+        $query = $conn->prepare('INSERT INTO MFPosts (threadid, authorid, creation_date, body) VALUES (?, ?, CURRENT_TIMESTAMP, ?); ');        
+        $query->bind_param('iis', $threadid, $_SESSION['userid'], $content);
+        if (!$query->execute()) return json_encode(array('response' => 404));
+
+        return json_encode(array('response' => 200));
+
+    }
+
+    function postEdit($conn, $id, $isThread, $content) {
+
+        $configs = include('src/php/config.php');
+
+        if (!isset($_SESSION['userid'])) return json_encode(array('response' => 401)); // Not authorized
+
+        if (!canUserCreateThread($conn, $_SESSION['userid'])) return json_encode(array('resoonse' => 403)); // Forbidden
+
+        if ($isThread) {
+            $query = $conn->prepare('SELECT timestampdiff(SECOND, creation_date, NOW()) <= ? as isEditable FROM MFThreads WHERE id = ? AND authorid = ?;');
+        } else {
+            $query = $conn->prepare('SELECT timestampdiff(SECOND, creation_date, NOW()) <= ? as isEditable FROM MFPosts WHERE id = ? AND authorid = ?;');
+        }
+
+        $query->bind_param('iii', $configs['EDITABLE_TIME'], $id, $_SESSION['userid']);
+        if (!$query->execute()) return json_encode(array('response' => 404));
+        $result = $query->get_result();
+        $data = $result->fetch_assoc();
+        if (!$data['isEditable']) return json_encode(array('response' => 601));
+
+        if ($isThread) {
+            $query = $conn->prepare('UPDATE MFThreads SET body=? WHERE id = ? AND authorid = ? AND timestampdiff(SECOND, creation_date, NOW()) <= ?;');
+        } else {
+            $query = $conn->prepare('UPDATE MFPosts SET body=? WHERE id = ? AND authorid = ? AND timestampdiff(SECOND, creation_date, NOW()) <= ?;');
+        }
+        
+        $query->bind_param('siii', $content, $id, $_SESSION['userid'], $configs['EDITABLE_TIME']);
+        if (!$query->execute()) return json_encode(array('response' => 404));
+
+        return json_encode(array('response' => 200));
+
+    }
+
+    function postDelete($conn, $id, $isThread) {
+
+        $configs = include('src/php/config.php');
+
+        if (!isset($_SESSION['userid'])) return json_encode(array('response' => 401)); // Not authorized
+
+        if (!canUserCreateThread($conn, $_SESSION['userid'])) return json_encode(array('resoonse' => 403)); // Forbidden
+
+        if ($isThread) {
+            $query = $conn->prepare('SELECT timestampdiff(SECOND, creation_date, NOW()) <= ? as isEditable FROM MFThreads WHERE id = ? AND authorid = ?;');
+        } else {
+            $query = $conn->prepare('SELECT timestampdiff(SECOND, creation_date, NOW()) <= ? as isEditable FROM MFPosts WHERE id = ? AND authorid = ?;');
+        }
+        
+        $query->bind_param('iii', $configs['EDITABLE_TIME'], $id, $_SESSION['userid']);
+        if (!$query->execute()) return json_encode(array('response' => 404));
+        $result = $query->get_result();
+        $data = $result->fetch_assoc();
+        if (!$data['isEditable']) return json_encode(array('response' => 601));
+
+        if ($isThread) {
+            $query = $conn->prepare('DELETE FROM MFPosts WHERE threadid = ?;');
+            $query->bind_param('i', $id);
+            $query->execute();
+            $query = $conn->prepare('DELETE FROM MFViews WHERE threadid = ?;');
+            $query->bind_param('i', $id);
+            $query->execute();
+            $query = $conn->prepare('DELETE FROM MFThreads WHERE id = ? AND authorid = ? AND timestampdiff(SECOND, creation_date, NOW()) <= ?;');
+            $query->bind_param('iii', $id, $_SESSION['userid'], $configs['EDITABLE_TIME']);
+        } else {
+            $query = $conn->prepare('DELETE FROM MFPosts WHERE id = ? AND authorid = ? AND timestampdiff(SECOND, creation_date, NOW()) <= ?;');
+            $query->bind_param('iii', $id, $_SESSION['userid'], $configs['EDITABLE_TIME']);
+        }
+        
+
+        if (!$query->execute()) return json_encode(array('response' => 404));
+
+        return json_encode(array('response' => 200));
 
     }
 

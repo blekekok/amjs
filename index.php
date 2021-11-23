@@ -54,9 +54,33 @@
                 $categoryid = $_POST['categoryid'];
                 $title = $_POST['title'];
                 $content = $_POST['content'];
-
                 if (isset($categoryid) && isset($title) && isset($content)) {
                     echo createThread($conn, $categoryid, $title, $content);
+                }
+                break;
+
+            case 'thread-reply':
+                $threadid = $_POST['threadid'];
+                $content = $_POST['content'];
+                if (isset($threadid) && isset($content)) {
+                    echo createReply($conn, $threadid, $content);
+                }
+                break;
+            
+            case 'post-edit':
+                $id = $_POST['id'];
+                $isThread = $_POST['isThread'];
+                $content = $_POST['content'];
+                if (isset($id) && isset($isThread) && isset($content)) {
+                    echo postEdit($conn, $id, $isThread, $content);
+                }
+                break;
+
+            case 'post-delete':
+                $id = $_POST['id'];
+                $isThread = $_POST['isThread'];
+                if (isset($id) && isset($isThread)) {
+                    echo postDelete($conn, $id, $isThread);
                 }
                 break;
         }

@@ -271,6 +271,29 @@ function buildThreadPost(title, content, isThread=false) {
 
     }).appendTo(postButtons);
 
+    
+    if (content.isAuthor && content.isEditable) {
+
+        // Edit Button
+        $('<button/>', {'html': '<img src="src/res/pencil.svg" alt="">'}).on('click', function () {
+
+            let editPost = buildCreatePostBuilder('Editing Post', 2, content.id, postWrapper, $(this), isThread, content.threadId);
+            $(postWrapper).replaceWith(editPost);
+
+        }).appendTo(postButtons);
+
+        // Delete Button
+        $('<button/>', {'html': '<img src="src/res/trash-bin.svg" alt="">'}).on('click', () => {
+            if (postDelete(content.id, isThread)) {
+                if (isThread) {
+                    window.location.replace('/');
+                } else {
+                    window.location.replace(`/index.php?thread=${content.threadId}`);
+                }
+            }
+        }).appendTo(postButtons);
+    }
+
     postButtons.appendTo(postFooter);
         
     postFooter.appendTo(postWrapper);
@@ -304,7 +327,7 @@ $('#create-thread-button').on('click', () => {
 
 });
 
-function buildCreatePostBuilder(title, type=0, id=0) {
+function buildCreatePostBuilder(title, type=0, id=0, param1=null, param2=null, param3=null, param4=null) {
 
     /**
      * 0 -> Create
@@ -390,6 +413,9 @@ function buildCreatePostBuilder(title, type=0, id=0) {
     let postFooter = $('<div/>', {'class': 'post-footer'});
 
     $('<button/>', {'html': '<img src="src/res/close.svg" alt="">'}).on('click', () => {
+
+        if (!confirm('Are you sure you want to cancel?')) return;
+
         switch (type) {
             case 0:
                 $('#bottom-seperator h1').html(`Site`);
@@ -398,17 +424,30 @@ function buildCreatePostBuilder(title, type=0, id=0) {
                 break;
 
             case 1:
+                $('#reply-post').remove();
+                break;
 
+            case 2:
+                $(postWrapper).replaceWith(param1);
+                param2.on('click', () => {
+                    let editPost = buildCreatePostBuilder('Editing Post', 2, content.id, param1, param2, param3);
+                    $(param1).replaceWith(editPost);
+            
+                })
                 break;
         }
     }).appendTo(postFooter);
+    
     $('<button/>', {'html': '<img src="src/res/check.svg" alt="">'}).on('click', () => {
+
+        let postContent = $(postEditor).children('.ql-editor').html();
+
         switch (type) {
             case 0:
                 let postTitle = $(postTitleInput).val();
-                let postContent = $(postEditor).children('.ql-editor').html();
         
-                if (postTitle.length < 1 || postContent.replaceAll(/<[a-zA-Z\/]+>/gm, '').length < 1) {
+                if (postTitle.length < 1 || 
+                    postContent.replaceAll(/<[a-zA-Z\/]+>/gm, '').length < 1) {
                     showError('Title or body should not be empty!');
                     return;
                 }
@@ -419,9 +458,25 @@ function buildCreatePostBuilder(title, type=0, id=0) {
                 break;
 
             case 1:
+                if (postContent.replaceAll(/<[a-zA-Z\/]+>/gm, '').length < 1) {
+                    showError('Body should not be empty!');
+                    return;
+                }
 
+                if (createReply(id, postContent)) {
+                    window.location.replace(`/index.php?thread=${id}`);
+                }
+                break;
+
+            case 2:
+                if (postContent.replaceAll(/<[a-zA-Z\/]+>/gm, '').length < 1) {
+                    showError('Body should not be empty!');
+                    return;
+                }
                 
-
+                if (postEdit(id, param3, postContent)) {
+                   window.location.replace(`/index.php?thread=${param4}`);
+                }
                 break;
         }
 
@@ -600,6 +655,153 @@ function createThread(categoryid, title, content) {
             
         case 500 && 404 && 403:
             showError('Unable to create thread!');
+            return false;
+    }
+
+    return false;
+}
+
+function createReply(threadid, content) {
+    let responseData = null;
+
+    $.post({
+        url: 'index.php',
+        dataType: 'json',
+        async: false,
+        data: {
+            action: 'thread-reply',
+            threadid: threadid,
+            content: content
+        },
+        success: (result) => {
+            responseData = result;
+        }
+    });
+
+    switch (responseData.response) {
+        case 200:
+            return true;
+
+        case 401:
+            window.location.replace('/login.php');
+            break;
+            
+        case 500 && 404 && 403:
+            showError('Unable to create thread!');
+            return false;
+    }
+
+    return false;
+}
+
+function createReply(threadid, content) {
+    let responseData = null;
+
+    $.post({
+        url: 'index.php',
+        dataType: 'json',
+        async: false,
+        data: {
+            action: 'thread-reply',
+            threadid: threadid,
+            content: content
+        },
+        success: (result) => {
+            responseData = result;
+        }
+    });
+
+    switch (responseData.response) {
+        case 200:
+            return true;
+
+        case 401:
+            window.location.replace('/login.php');
+            break;
+            
+        case 500 && 404 && 403:
+            showError('Unable to create reply!');
+            return false;
+
+        case 601:
+            showError('You only can create a reply every 1 day');
+            return false;
+    }
+
+    return false;
+}
+
+function postEdit(id, isThread, content) {
+
+    let responseData = null;
+
+    $.post({
+        url: 'index.php',
+        dataType: 'json',
+        async: false,
+        data: {
+            action: 'post-edit',
+            id: id,
+            isThread: isThread ? 1 : 0,
+            content: content
+        },
+        success: (result) => {
+            responseData = result;
+        }
+    });
+
+    switch (responseData.response) {
+        case 200:
+            return true;
+
+        case 401:
+            window.location.replace('/login.php');
+            break;
+            
+        case 500 && 404 && 403:
+            showError('Unable to edit post!');
+            return false;
+
+        case 601:
+            showError('Time limit exceeded!');
+            return false;
+    }
+
+    return false;
+}
+
+function postDelete(id, isThread) {
+
+    let responseData = null;
+
+    $.post({
+        url: 'index.php',
+        dataType: 'json',
+        async: false,
+        data: {
+            action: 'post-delete',
+            id: id,
+            isThread: isThread ? 1 : 0
+        },
+        success: (result) => {
+            responseData = result;
+        }
+    });
+
+    switch (responseData.response) {
+        case 200:
+            return true;
+
+        case 401:
+            window.location.replace('/login.php');
+            break;
+            
+        case 500 && 404 && 403:
+            showError('Unable to delete post!');
+            return false;
+
+        case 601:
+            showError('Time limit exceeded!');
             return false;
     }
 
