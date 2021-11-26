@@ -1,20 +1,31 @@
 <?php
-    $host = "localhost";
-    $user = "amjs";
-    $pass = "YF*69LGJ2JZpeRq%vEkfJxZ5edomFqwE%M#DAmWEvUh*hZc#iDNELz7EmpbaMDgV3tkfV9ryWR657RtGGBkSm%U#cLzrcXF6T#2LV9tNhqERr$9UNbZmT@9HTx5hN3Jm";
-    $db = "metaforums";
-    $conn = new mysqli($host, $user, $pass, $db);
+
+    $configs = include('src/php/config.php');
+
+    $conn = new mysqli($configs['DB_HOST'], $configs['DB_USER'], $configs['DB_PASS'], $configs['DB_db']);
     if ($conn->connect_error) {
         die("Connected failed: " . $conn->connect_error);
     }
 
     session_start();
     
-    // Update user activity
     if (isset($_SESSION['role'])) {
+        // Update user activity
         $query = $conn->prepare('UPDATE MFUsers SET lastactivity=CURRENT_TIMESTAMP WHERE username LIKE ?;');
         $query->bind_param('s', $_SESSION['username']);
         $query->execute();
+
+        $query = $conn->prepare('SELECT deleted FROM MFUsers WHERE id = ? AND deleted = 1;');
+        $query->bind_param('i', $_SESSION['userid']);
+        $query->execute();
+
+        $result = $query->get_result();
+        if ($result && $result->num_rows >= 1) {
+            session_unset();
+    
+            header('Location: index.php');
+            die();
+        }
     }
 
     function getActiveUser($conn, $user) {

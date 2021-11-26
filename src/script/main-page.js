@@ -140,7 +140,7 @@ function setActiveThread(threadid, fromLink=false) {
 
         $('#thread-content').empty();
 
-        let threadPost = buildThreadPost('Main Post', threadContent, true);
+        let threadPost = buildThreadPost('Main Post', threadContent, true, result.content.locked);
 
         $('#thread-content').append(threadPost);
 
@@ -150,14 +150,14 @@ function setActiveThread(threadid, fromLink=false) {
         if (postsContent) {
             
             postsContent.forEach(post => {
-                $('#thread-content').append(buildThreadPost(post.targetUsername ? `Reply to ${post.targetUsername}` : 'Reply to Main Post', post, false))
+                $('#thread-content').append(buildThreadPost(post.targetUsername ? `Reply to ${post.targetUsername}` : 'Reply to Main Post', post, false, result.content.locked))
             });
 
         }
     }
 }
 
-function buildThreadPost(title, content, isThread=false) {
+function buildThreadPost(title, content, isThread=false, isLocked=false) {
 
     let postWrapper = $('<div/>', {'class': 'post-wrapper'});
     
@@ -178,8 +178,8 @@ function buildThreadPost(title, content, isThread=false) {
     let userProfile = $('<div/>', {'class': 'user-profile'});
     
     // User profile contents
-    $('<a/>', {'class': 'avatar', 'html': `<img src="${content.avatarURL ? content.avatarURL : 'src/res/default-user-icon.jpg'}" alt="">`, 'href': `/profile?user=${content.author}`}).appendTo(userProfile);
-    $('<a/>', {'class': 'username', 'html': content.author, 'href': `/profile?user=${content.author}`}).appendTo(userProfile);
+    $('<a/>', {'class': 'avatar', 'html': `<img src="${content.avatarURL ? content.avatarURL : 'src/res/default-user-icon.jpg'}" alt="">`, 'href': `/profile.php?user=${content.author}`}).appendTo(userProfile);
+    $('<a/>', {'class': 'username', 'html': content.author, 'href': `/profile.php?user=${content.author}`}).appendTo(userProfile);
     $('<span/>', {'class': 'status', 'html': content.active ? 'Online' : 'Offline'}).appendTo(userProfile);
     userProfile.appendTo(userInfo);
     
@@ -200,11 +200,11 @@ function buildThreadPost(title, content, isThread=false) {
     
     let modStatusText = 'Active';
     switch (content.modStatus) {
-        case 2:
+        case 1:
             modStatusText = 'Silenced';
             break;
             
-        case 3:
+        case 2:
             modStatusText = 'Banned';
             break;
     }
@@ -236,7 +236,7 @@ function buildThreadPost(title, content, isThread=false) {
     //$('<button/>', {'html': '<img src="src/res/heart.svg" alt="">'}).on('click', () => {console.log('nothing for now')}).appendTo(postButtons);
 
     // Like Button
-    if (!content.isAuthor) {   
+    if (!content.isAuthor && content.modStatus <= 0) {   
         let isLiked = content.isLiked;
         $('<button/>', {'html': `<img src="src/res/${isLiked ? 'heart-filled.svg' : 'heart.svg'}" alt="">`}).on('click', function () {
             if (updatePostLike(content.id, !isLiked, isThread)) {
@@ -258,18 +258,20 @@ function buildThreadPost(title, content, isThread=false) {
             }
         }).appendTo(postButtons);
     }
-    
+
     // Reply Button
-    $('<button/>', {'html': '<img src="src/res/reply.svg" alt="">'}).on('click', () => {
-
-        $('#reply-post').remove();
-
-        let replyPost = buildCreatePostBuilder(isThread ? 'Creating Reply to Main Post' : `Creating Reply to ${content.author}`, 1, content.threadId);
-        $('#thread-content').append(replyPost);
-
-        $('html,body').animate({scrollTop: replyPost.offset().top}, 'fast');
-
-    }).appendTo(postButtons);
+    if (content.modStatus <= 0 && !isLocked) {
+        $('<button/>', {'html': '<img src="src/res/reply.svg" alt="">'}).on('click', () => {
+    
+            $('#reply-post').remove();
+    
+            let replyPost = buildCreatePostBuilder(isThread ? 'Creating Reply to Main Post' : `Creating Reply to ${content.author}`, 1, content.threadId);
+            $('#thread-content').append(replyPost);
+    
+            $('html,body').animate({scrollTop: replyPost.offset().top}, 'fast');
+    
+        }).appendTo(postButtons);
+    }
 
     
     if (content.isAuthor && content.isEditable) {
@@ -277,7 +279,7 @@ function buildThreadPost(title, content, isThread=false) {
         // Edit Button
         $('<button/>', {'html': '<img src="src/res/pencil.svg" alt="">'}).on('click', function () {
 
-            let editPost = buildCreatePostBuilder('Editing Post', 2, content.id, postWrapper, $(this), isThread, content.threadId);
+            let editPost = buildCreatePostBuilder('Editing Post', 2, content.id, postWrapper, $(this), isThread, content.threadId, content.postBody);
             $(postWrapper).replaceWith(editPost);
 
         }).appendTo(postButtons);
@@ -327,7 +329,7 @@ $('#create-thread-button').on('click', () => {
 
 });
 
-function buildCreatePostBuilder(title, type=0, id=0, param1=null, param2=null, param3=null, param4=null) {
+function buildCreatePostBuilder(title, type=0, id=0, param1=null, param2=null, param3=null, param4=null, param5=null) {
 
     /**
      * 0 -> Create
@@ -357,8 +359,8 @@ function buildCreatePostBuilder(title, type=0, id=0, param1=null, param2=null, p
     let userProfile = $('<div/>', {'class': 'user-profile'});
     
     // User profile contents
-    $('<a/>', {'class': 'avatar', 'html': `<img src="${content.avatarURL ? content.avatarURL : 'src/res/default-user-icon.jpg'}" alt="">`, 'href': `/profile?user=${content.author}`}).appendTo(userProfile);
-    $('<a/>', {'class': 'username', 'html': content.author, 'href': `/profile?user=${content.author}`}).appendTo(userProfile);
+    $('<a/>', {'class': 'avatar', 'html': `<img src="${content.avatarURL ? content.avatarURL : 'src/res/default-user-icon.jpg'}" alt="">`, 'href': `/profile.php?user=${content.author}`}).appendTo(userProfile);
+    $('<a/>', {'class': 'username', 'html': content.author, 'href': `/profile.php?user=${content.author}`}).appendTo(userProfile);
     $('<span/>', {'class': 'status', 'html': content.active ? 'Online' : 'Offline'}).appendTo(userProfile);
     userProfile.appendTo(userInfo);
     
@@ -379,11 +381,11 @@ function buildCreatePostBuilder(title, type=0, id=0, param1=null, param2=null, p
     
     let modStatusText = 'Active';
     switch (content.modStatus) {
-        case 2:
+        case 1:
             modStatusText = 'Silenced';
             break;
             
-        case 3:
+        case 2:
             modStatusText = 'Banned';
             break;
     }
@@ -401,11 +403,14 @@ function buildCreatePostBuilder(title, type=0, id=0, param1=null, param2=null, p
     let postBody = $('<div/>', {'class': 'post-body'});
     let postTitleInput;
     if (type == 0) postTitleInput = $('<input/>', {'class': 'post-title', 'placeholder': 'Write your title here...'}).appendTo(postBody);
-    let postEditor = $('<div/>', {'class': 'post-editor'}).appendTo(postBody).ready(function () {
+    let postEditor = $('<div/>', {'class': 'post-editor'}).ready(function () {
         new Quill('.post-editor', {
             theme: 'snow'
         });
-    });
+
+        $(postEditor).children('.ql-editor').html(param5);
+    }).appendTo(postBody);
+
     postBody.appendTo(postContent);
     postContent.appendTo(postWrapper);
 

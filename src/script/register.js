@@ -41,7 +41,7 @@ function getUsername(username) {
     let responseData;
 
     $.post({
-        url: 'login.php',
+        url: 'register.php',
         dataType: 'json',
         async: false,
         data: {
@@ -60,7 +60,7 @@ function getEmail(email) {
     let responseData;
 
     $.post({
-        url: 'login.php',
+        url: 'register.php',
         dataType: 'json',
         async: false,
         data: {

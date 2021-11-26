@@ -1,0 +1,162 @@
+#profile-wrapper {
+    display: flex;
+    flex-direction: column;
+    margin-top: 35px;
+    min-height: 350px;
+    box-shadow: 0px 3px 15px rgba(0,0,0,0.15);
+}
+
+#profile-wrapper > .profile-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+    height: 50px;
+    color: white;
+    background-color: var(--accent-magenta);
+}
+
+#profile-wrapper > .profile-content {
+    display: flex;
+    min-height: 300px;
+}
+
+#profile-wrapper > .profile-content > .profile-body {
+    min-width: 200px;
+}
+
+#profile-wrapper > .profile-content > .user-info {
+    min-width: 200px;
+}
+
+#profile-wrapper > .profile-content > .user-info > .user-profile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 225px;
+    border-bottom: solid 1px var(--light-gray);
+    color: var(--dark-grey);
+}
+
+#profile-wrapper > .profile-content > .user-info > .user-profile > .avatar {
+    margin-bottom: 24px;
+}
+
+#profile-wrapper > .profile-content > .user-info > .user-profile > .avatar > img {
+    height: 100px;
+    border-radius: 50%;
+    box-shadow: 1px 6px 8px -2px rgba(0,0,0,0.6);
+}
+
+#profile-wrapper > .profile-content > .user-info > .user-profile > .avatar:hover {
+    filter: brightness(95%);
+}
+
+#profile-wrapper > .profile-content > .user-info > .user-profile > .username {
+    text-decoration: none;
+    font-size: 20px;
+    margin-bottom: 4px;
+    color: var(--dark-gray);
+}
+
+#profile-wrapper > .profile-content > .user-info > .user-profile > .username:hover {
+    filter: brightness(150%);
+}
+
+#profile-wrapper > .profile-content > .user-info > .user-profile > .status {
+    font-size: 14px;
+}
+
+#profile-wrapper > .profile-content > .user-info > .user-data {
+    display: flex;
+    flex-direction: column;
+    padding: 10px 10px;
+}
+
+#profile-wrapper > .profile-content > .user-info > .user-data > div {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    margin-bottom: 2px;
+}
+
+#profile-wrapper > .profile-content > .user-info > .user-data img {
+    height: 20px;
+    margin-right: 4px;
+}
+
+#profile-wrapper > .profile-content > .user-info > .user-data span {
+    color: var(--dark-gray);
+    font-size: 16px;
+}
+
+#profile-wrapper > .profile-content > .user-info > .user-data span {
+    color: var(--dark-gray);
+    font-size: 16px;
+}
+
+#profile-wrapper > .profile-content > .profile-body {
+    display: flex;
+    flex-direction: column;
+    justify-content: stretch;
+    align-items: stretch;
+    width: 100%;
+    margin: 0;
+    border-left: solid 1px var(--light-gray);
+    color: var(--dark-gray);
+}
+
+#profile-wrapper > .profile-content > .profile-body > .about-wrapper {
+    display: flex;
+    flex-direction: column;
+    padding: 20px 15px;
+}
+
+#profile-wrapper > .profile-content > .profile-body > .about-wrapper > .about-me {
+    margin-bottom: 10px;
+    font-size: 20px;
+}
+
+#profile-wrapper > .profile-content > .profile-body > .profile-data {
+    display: flex;
+    padding: 30px 15px;
+}
+
+#profile-wrapper > .profile-content > .profile-body > .profile-data > div {
+    display: flex;
+    flex-direction: column;
+}
+
+#profile-wrapper > .profile-content > .profile-body > .profile-data > div > span {
+    font-size: 18px;
+}
+
+#profile-wrapper > .profile-content > .profile-body > .profile-data > .extra-info > div {
+    display: flex;
+    flex-direction: column;
+    padding: 6px 8px;
+}
+
+#profile-wrapper > .profile-content > .profile-body > .profile-data > .extra-info > div > span {
+    margin: 6px 0;
+}
+
+#profile-wrapper > .profile-content > .profile-body > .profile-data > .recent-posts > .post-list > ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+#profile-wrapper > .profile-content > .profile-body > .profile-data > .recent-posts > .post-list > ul > li {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    height: 50px;
+    border-bottom: solid 1px var(--light-gray);
+}
+
+#profile-wrapper > .profile-content > .profile-body > .profile-data > .recent-posts > .post-list > ul span, a {
+    margin: 0 6px;
+}

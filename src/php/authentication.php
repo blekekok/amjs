@@ -45,7 +45,7 @@
         if ($auth) {
             
             // Get user details
-            $query = $conn->prepare('SELECT id,role,username FROM MFUsers WHERE username LIKE ? OR email LIKE ?;');
+            $query = $conn->prepare('SELECT * FROM MFUsers WHERE username LIKE ? OR email LIKE ?;');
             $query->bind_param('ss', $user, $user);
             $query->execute();
 
@@ -59,6 +59,9 @@
             $_SESSION['role'] = $data['role'];
             $_SESSION['username'] = $data['username'];
             $_SESSION['userid'] = $data['id'];
+            $_SESSION['email'] = $data['email'];
+            $_SESSION['email_visibility'] = $data['email_visibility'];
+            $_SESSION['avatar'] = $data['avatar'];
 
             // Set user details after log on
             $query = $conn->prepare('UPDATE MFUsers SET lastlogin=CURRENT_TIMESTAMP WHERE username LIKE ?;');
@@ -152,13 +155,13 @@
 
         if (!$query->execute()) return json_encode(array('response' => false));
 
-        SendResetPasswordEmail($conn, $email, $resetpassword_token);
+        SendResetPasswordEmail($email, $resetpassword_token);
 
         return json_encode(array('response' => true));
 
     }
 
-    function SendResetPasswordEmail($conn, $email, $token) {
+    function SendResetPasswordEmail($email, $token) {
 
         $configs = include('src/php/config.php');
 
@@ -172,7 +175,7 @@
         $message = str_replace($temp_var, $replace_var, $message);
 
         // Set headers
-        $headers = 'From: blekekokkovlek@gmail.com\r\n';
+        $headers = 'From: '.$configs['EMAIL_ADDRESS'].'\r\n';
         $headers .= "MIME-Version: 1.0\r\n";
         $headers .= "Content-Type: text/html; charset=ISO-8859-1\r\n";
 
@@ -195,12 +198,35 @@
         $message = str_replace($temp_var, $replace_var, $message);
 
         // Set headers
-        $headers = 'From: blekekokkovlek@gmail.com\r\n';
+        $headers = 'From: '.$configs['EMAIL_ADDRESS'].'\r\n';
         $headers .= "MIME-Version: 1.0\r\n";
         $headers .= "Content-Type: text/html; charset=ISO-8859-1\r\n";
 
         // Send Email
         $subject = "Verify your account";
+        mail($email, $subject, $message, $headers);
+    }
+
+    function SendAccountChangeEmail($email, $token) {
+
+        $configs = include('src/php/config.php');
+
+        // Load email template from template file
+        $template = 'src/php/accountchange-template.php';
+        $message = file_get_contents($template);
+
+        // Replace all variables
+        $temp_var = array('{SITE_ADDRESS}', '{EMAIL}', '{TOKEN}');
+        $replace_var = array($configs['SITE_ADDRESS'], $email, $token);
+        $message = str_replace($temp_var, $replace_var, $message);
+
+        // Set headers
+        $headers = 'From: '.$configs['EMAIL_ADDRESS'].'\r\n';
+        $headers .= "MIME-Version: 1.0\r\n";
+        $headers .= "Content-Type: text/html; charset=ISO-8859-1\r\n";
+
+        // Send Email
+        $subject = "Confirm Changes";
         mail($email, $subject, $message, $headers);
     }
 

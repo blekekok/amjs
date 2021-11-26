@@ -1,0 +1,42 @@
+#tab-nav > ul {
+    display: flex;
+    flex-direction: row;
+    list-style: none;
+    border-bottom: solid 1px var(--light-gray);
+}
+
+#tab-nav > ul > li {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 10px;
+    padding: 10px;
+    user-select: none;
+}
+
+#tab-nav > ul > li:hover {
+    cursor: pointer;
+    color: var(--dark-gray);
+}
+
+#tab-nav > ul > li:active {
+    color: var(--gray);
+}
+
+#tab-nav > ul > li.active {
+    border-bottom: solid 2px var(--accent-blue);
+}
+
+#profile-tab > .profile-notify {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    padding: 0 10px;
+    height: 50px;
+    background-color: var(--accent-yellow);
+    color: var(--accent-magenta)   
+}
+
+#management-tab {
+    display: none;
+}

@@ -31,8 +31,14 @@
 
     function getCategories($conn, $id) {
 
-        $query = $conn->prepare('SELECT * FROM MFCategories WHERE groupid = ?;');
-        $query->bind_param('i', $id);
+        if (isset($_SESSION['userid'])) {
+            $query = $conn->prepare('SELECT * FROM MFCategories A WHERE groupid = ? AND (SELECT COUNT(*) FROM MFModStatus WHERE userid = ? AND level = 2 AND categoryid = A.id) <= 0;');
+            echo $conn->error;
+            $query->bind_param('ii', $id, $_SESSION['userid']);
+        } else {
+            $query = $conn->prepare('SELECT * FROM MFCategories WHERE groupid = ?;');
+            $query->bind_param('i', $id);
+        }
         $query->execute();
 
         $result = $query->get_result();
@@ -69,7 +75,7 @@
 
         if (!isset($_SESSION['userid'])) return json_encode(array('response' => 401)); // Not authorized
 
-        $query = $conn->prepare('SELECT A.id, A.id as threadId, title, categoryid as categoryId, groupid as groupId, A.creation_date as postDate, DATE_FORMAT(A.creation_date, "%M %D %Y %h:%i %p") as threadDate, C.displayname as categoryName, timestampdiff(SECOND, A.lastactivity, NOW()) as threadLastActivity, timestampdiff(SECOND, A.creation_date, NOW()) as postDate, avatar as avatarURL, username as author, timestampdiff(SECOND, B.lastactivity, NOW()) <= ? as active, role, ((SELECT COUNT(*) FROM MFThreads WHERE authorid = A.authorid) + (SELECT COUNT(*) FROM MFPosts WHERE authorid = A.authorid)) as totalUserPosts, timestampdiff(SECOND, lastlogin, NOW()) as lastLogin, (SELECT level FROM MFModStatus WHERE userid = A.authorid AND timestampdiff(SECOND, NOW(), expirydate) >= 0) as modStatus, (SELECT COUNT(*) FROM MFThreadLikes WHERE threadid = A.id) as totalPostLikes, (SELECT COUNT(*) FROM MFThreadLikes WHERE threadid = A.id AND userid LIKE ?) >= 1 as isLiked, B.username LIKE ? as isAuthor, body as postBody, timestampdiff(SECOND, A.creation_date, NOW()) <= ? as isEditable FROM MFThreads A JOIN MFUsers B ON A.authorid = B.id JOIN MFCategories C ON A.categoryid = C.id WHERE A.id = ?;');
+        $query = $conn->prepare('SELECT A.id, A.id as threadId, A.locked, title, categoryid as categoryId, groupid as groupId, A.creation_date as postDate, DATE_FORMAT(A.creation_date, "%M %D %Y %h:%i %p") as threadDate, C.displayname as categoryName, timestampdiff(SECOND, A.lastactivity, NOW()) as threadLastActivity, timestampdiff(SECOND, A.creation_date, NOW()) as postDate, avatar as avatarURL, username as author, timestampdiff(SECOND, B.lastactivity, NOW()) <= ? as active, role, ((SELECT COUNT(*) FROM MFThreads WHERE authorid = A.authorid) + (SELECT COUNT(*) FROM MFPosts WHERE authorid = A.authorid)) as totalUserPosts, timestampdiff(SECOND, lastlogin, NOW()) as lastLogin, (SELECT level FROM MFModStatus WHERE userid = A.authorid AND categoryid=A.categoryid AND timestampdiff(SECOND, NOW(), expirydate) >= 0) as modStatus, (SELECT COUNT(*) FROM MFThreadLikes WHERE threadid = A.id) as totalPostLikes, (SELECT COUNT(*) FROM MFThreadLikes WHERE threadid = A.id AND userid LIKE ?) >= 1 as isLiked, B.username LIKE ? as isAuthor, body as postBody, timestampdiff(SECOND, A.creation_date, NOW()) <= ? as isEditable, B.deleted FROM MFThreads A JOIN MFUsers B ON A.authorid = B.id JOIN MFCategories C ON A.categoryid = C.id WHERE A.id = ?;');
         $query->bind_param('iisii', $configs['MAX_ACTIVITY_TIME'], $_SESSION['userid'], $_SESSION['username'], $configs['EDITABLE_TIME'], $id);
         $query->execute();
         
@@ -81,9 +87,17 @@
 
         addThreadViewCount($conn, $id);
 
-        $data = array('response' => 200, 'content' => $result->fetch_assoc());
+        $data = $result->fetch_assoc();
+        if ($data['modStatus'] == 2) return json_encode(array('response' => 404));
 
-        $query = $conn->prepare('SELECT A.id, threadid as threadId, timestampdiff(SECOND, A.creation_date, NOW()) as postDate, avatar as avatarURL, username as author, timestampdiff(SECOND, B.lastactivity, NOW()) <= ? as active, role, ((SELECT COUNT(*) FROM MFThreads WHERE authorid = A.authorid) + (SELECT COUNT(*) FROM MFPosts WHERE authorid = A.authorid)) as totalUserPosts, timestampdiff(SECOND, lastlogin, NOW()) as lastLogin, (SELECT level FROM MFModStatus WHERE userid = A.authorid AND timestampdiff(SECOND, NOW(), expirydate) >= 0) as modStatus, (SELECT COUNT(*) FROM MFPostLikes WHERE postid = A.id) as totalPostLikes, (SELECT COUNT(*) FROM MFPostLikes WHERE postid = A.id AND userid LIKE ?) >= 1 as isLiked, B.username LIKE ? as isAuthor, body as postBody, timestampdiff(SECOND, A.creation_date, NOW()) <= ? as isEditable FROM MFPosts A JOIN MFUsers B ON A.authorid = B.id WHERE threadid = ? ORDER BY postDate DESC;');
+        if ($data['deleted']) {
+            $data['author'] = '[deleted]';
+            $data['avatarURL'] = '';
+        }
+
+        $data = array('response' => 200, 'content' => $data);
+
+        $query = $conn->prepare('SELECT A.id, threadid as threadId, timestampdiff(SECOND, A.creation_date, NOW()) as postDate, avatar as avatarURL, username as author, timestampdiff(SECOND, B.lastactivity, NOW()) <= ? as active, role, ((SELECT COUNT(*) FROM MFThreads WHERE authorid = A.authorid) + (SELECT COUNT(*) FROM MFPosts WHERE authorid = A.authorid)) as totalUserPosts, timestampdiff(SECOND, lastlogin, NOW()) as lastLogin, (SELECT level FROM MFModStatus WHERE userid = A.authorid AND timestampdiff(SECOND, NOW(), expirydate) >= 0) as modStatus, (SELECT COUNT(*) FROM MFPostLikes WHERE postid = A.id) as totalPostLikes, (SELECT COUNT(*) FROM MFPostLikes WHERE postid = A.id AND userid LIKE ?) >= 1 as isLiked, B.username LIKE ? as isAuthor, body as postBody, timestampdiff(SECOND, A.creation_date, NOW()) <= ? as isEditable, B.deleted FROM MFPosts A JOIN MFUsers B ON A.authorid = B.id WHERE threadid = ? ORDER BY postDate DESC;');
         $query->bind_param('iisii', $configs['MAX_ACTIVITY_TIME'], $_SESSION['userid'], $_SESSION['username'], $configs['EDITABLE_TIME'], $id);
         
         $query->execute();
@@ -92,10 +106,15 @@
         
         $list = array();
         
-        while ($item = $result->fetch_assoc()) {
+        while ($item = $result->fetch_assoc()){
+            if ($item['deleted']) {
+                $item['author'] = '[deleted]';
+                $item['avatarURL'] = '';
+            }
+            
             array_push($list, $item);
         }
-        
+            
         $data['posts'] = $list;
 
         return json_encode($data); // Success
